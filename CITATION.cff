@@ -1,0 +1,22 @@
+# CITATION.cff
+cff-version: 1.2.0
+message: >
+  If you use MetaPAC in your research or thesis, please cite it as below.
+title: "MetaPAC: Meta-learning based Predictive Adaptive Compression"
+authors:
+  - family-names: "Panyi"
+    given-names: "Tamás"
+date-released: 2025-12-15
+version: "0.1.0"
+license: "MIT"
+repository-code: "https://github.com/alenoi/metapac"
+preferred-citation:
+  type: software
+  title: "MetaPAC: Meta-learning based Predictive Adaptive Compression"
+  authors:
+    - family-names: "Panyi"
+      given-names: "Tamás"
+  year: 2025
+  institution: "Óbudai Egyetem"
+  version: "0.1.0"
+  url: "https://github.com/alenoi/metapac"

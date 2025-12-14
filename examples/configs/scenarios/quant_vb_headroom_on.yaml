@@ -1,0 +1,59 @@
+# ============================================================================
+# QUANTIZATION-ONLY SCENARIO: Variable-bit with headroom trimming ON
+# ============================================================================
+mode: compress
+
+compression:
+  target_model: "targets/distilbert/runs/checkpoints/checkpoint-12600"
+  meta_checkpoint: "artifacts/checkpoints/metapac_meta_distilbert_sst2_best"
+  output_dir: "targets/distilbert/models/experiments/quant_vb_headroom_on"
+
+  zones:
+    high:
+      quantile_min: 0.7
+      quantile_max: 1.0
+      action: "keep"
+    medium:
+      quantile_min: 0.3
+      quantile_max: 0.7
+      action: "quantize"
+    low:
+      quantile_min: 0.0
+      quantile_max: 0.3
+      action: "prune"
+
+  quantization:
+    enabled: true
+    mode: "rank_aware_trim"
+    bits_lower: 4
+    bits_upper: 8
+    util_target: 0.98           # headroom trimming enabled
+    per_channel: true
+    symmetric: true
+    clip_percentile: 0.0
+    export_variable_bit: true
+    export_int: false
+    export_packed: true
+    mapping:
+      type: "linear"
+    layer_overrides:
+      - pattern: ".*attention.*"
+        bits: 8
+      - pattern: ".*classifier.*"
+        bits: 8
+
+  pruning:
+    enabled: false
+
+  fine_tuning:
+    enabled: false
+
+  validation:
+    enabled: true
+    dataset: "glue"
+    dataset_config: "sst2"
+    split: "validation"
+    runtime: "auto"
+    batch_size: 64
+    max_length: 128
+    save_results: true

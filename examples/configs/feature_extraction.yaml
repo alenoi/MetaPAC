@@ -1,0 +1,39 @@
+# ============================================================================
+# FEATURE EXTRACTION CONFIGURATION
+# ============================================================================
+# Extract parameter-level features from training hooks
+# Processes hook statistics into meta-dataset for predictor training
+#
+# Use this to build the meta-dataset from raw hook data
+
+mode: feature_extract
+
+# ============================================================================
+# FEATURE EXTRACTION SETTINGS
+# ============================================================================
+reducer: "mean_pool"
+token_average: true
+
+# ============================================================================
+# INPUT
+# ============================================================================
+input_dir: "metapac/artifacts/raw"
+hook_pattern: "hook_stats_epoch*.csv"
+phases: [ "train", "val" ]
+
+# ============================================================================
+# OUTPUT
+# ============================================================================
+write_parquet: true
+write_csv: true
+max_files: null
+chunksize: null
+run_id: "distilbert_baseline"
+
+# ============================================================================
+# OUTPUT PATHS
+# ============================================================================
+outputs:
+  meta_dataset_path: "artifacts/meta_dataset/meta_dataset.parquet"
+  runs_dir: "metapac/runs"
+  results_dir: "metapac/results"

@@ -1,0 +1,55 @@
+# ============================================================================
+# PRUNING-ONLY SCENARIO: Magnitude-based, logical masks, 30%/30%
+# ============================================================================
+mode: compress
+
+compression:
+  target_model: "targets/distilbert/runs/checkpoints/checkpoint-12600"
+  meta_checkpoint: "artifacts/checkpoints/metapac_meta_distilbert_sst2_best"
+  output_dir: "targets/distilbert/models/experiments/prune_magnitude_logical_30"
+
+  zones:
+    high:
+      quantile_min: 0.3
+      quantile_max: 1.0
+      action: "keep"
+    medium:
+      quantile_min: 0
+      quantile_max: 0
+      action: "quantize"  # keep to isolate pruning effect
+    low:
+      quantile_min: 0.0
+      quantile_max: 0.3
+      action: "prune"
+
+  quantization:
+    enabled: true
+    util_target: 0.98 
+    export_variable_bit: true
+    export_int: false
+    export_packed: true
+
+  pruning:
+    enabled: true
+    method: "magnitude"     
+    physical: false          
+    head_pruning_ratio: 0.30
+    ffn_pruning_ratio: 0.30
+    global_pruning: true
+    layer_wise: true
+    min_heads_per_layer: 2
+    min_ffn_ratio: 0.5
+    normalize_scores: true
+
+  fine_tuning:
+    enabled: false
+
+  validation:
+    enabled: true
+    dataset: "glue"
+    dataset_config: "sst2"
+    split: "validation"
+    runtime: "auto"
+    batch_size: 64
+    max_length: 128
+    save_results: true
