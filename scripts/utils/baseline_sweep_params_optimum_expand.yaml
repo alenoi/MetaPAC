@@ -1,0 +1,11 @@
+# Baseline fine-tune sweep space focused around discovered optima
+# Goal: extend beyond previous bounds while staying near high-performing region.
+
+search_space:
+  baseline_finetune.train.learning_rate: [4.0e-05, 5.0e-05, 7.0e-05]
+  baseline_finetune.train.weight_decay: [0.0, 0.01]
+  baseline_finetune.train.num_train_epochs: [5, 6, 7]
+  baseline_finetune.train.per_device_train_batch_size: [32, 64]
+  baseline_finetune.train.per_device_eval_batch_size: [64, 128]
+  baseline_finetune.train.gradient_accumulation_steps: [2, 4]
+  baseline_finetune.train.warmup_ratio: [0.02, 0.03]

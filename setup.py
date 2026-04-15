@@ -1,8 +1,0 @@
-"""Setup script for MetaPAC package."""
-from setuptools import setup, find_packages
-
-if __name__ == "__main__":
-    setup(
-        packages=find_packages(include=["metapac", "metapac.*"]),
-        include_package_data=True,
-    )

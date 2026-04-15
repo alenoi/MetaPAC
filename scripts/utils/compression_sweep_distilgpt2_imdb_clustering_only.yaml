@@ -1,0 +1,53 @@
+# Clustering-focused smart compression sweep for distilgpt2/imdb.
+# Non-clustering parameters are fixed to the previous run's best settings.
+
+parameters:
+  # -----------------------------
+  # Fixed (from best prior trial t0037)
+  # -----------------------------
+  compression.pruning.sparsity_level: [0.25]
+  compression.pruning.min_importance_threshold: [0.004]
+  compression.quantization.bits_lower: [4]
+  compression.quantization.bits_upper: [8]
+  compression.quantization.layer_overrides:
+    - []
+  compression.kd.alpha: [0.7]
+  compression.kd.temperature: [4.0]
+
+  # -----------------------------
+  # Clustering-only search space
+  # -----------------------------
+  compression.zone_assignment.method: ["kmeans", "gmm"]
+  compression.zone_assignment.kmeans.n_clusters: [3]
+  compression.zone_assignment.kmeans.n_init: [5, 10, 20, 40]
+  compression.zone_assignment.kmeans.random_state: [7, 42, 123, 777]
+  compression.zone_assignment.kmeans.min_high_fraction: [0.08, 0.12, 0.18, 0.24]
+
+parameter_order:
+  # Probe clustering first
+  - compression.zone_assignment.method
+  - compression.zone_assignment.kmeans.n_init
+  - compression.zone_assignment.kmeans.random_state
+  - compression.zone_assignment.kmeans.min_high_fraction
+  - compression.zone_assignment.kmeans.n_clusters
+
+  # Keep fixed params explicit and stable
+  - compression.pruning.sparsity_level
+  - compression.pruning.min_importance_threshold
+  - compression.quantization.bits_lower
+  - compression.quantization.bits_upper
+  - compression.quantization.layer_overrides
+  - compression.kd.alpha
+  - compression.kd.temperature
+
+# More headroom for clustering combinations
+# (phase-1 is still adaptive; phase-2 explores top selections only)
+topk_per_parameter: 4
+max_combination_trials: 80
+
+min_improvement: 0.02
+patience: 16
+
+weights:
+  compression: 1.0
+  accuracy_drop: 1.0

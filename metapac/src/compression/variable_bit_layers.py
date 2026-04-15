@@ -216,7 +216,7 @@ class QuantizedEmbedding(nn.Embedding):
             if tuple(weight_fp32.shape) == tuple(self.weight.shape):
                 self.weight.copy_(weight_fp32)
             elif tuple(weight_fp32.t().shape) == tuple(self.weight.shape):
-                # Defenzív: ritkán szükséges embeddingnél, de ártani nem árt.
+                # Defensive path: rarely needed for embeddings, but harmless.
                 self.weight.copy_(weight_fp32.t())
             elif weight_fp32.numel() == self.weight.numel():
                 self.weight.copy_(weight_fp32.reshape_as(self.weight))

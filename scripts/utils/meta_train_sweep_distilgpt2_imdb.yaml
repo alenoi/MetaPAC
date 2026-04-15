@@ -1,0 +1,21 @@
+# Meta-predictor training sweep (distilgpt2/imdb)
+
+search_mode: random
+max_trials: 12
+seed: 42
+
+# Minimize validation error
+objective: metrics.rmse
+objective_direction: min
+
+parameters:
+  training.lr: [0.001, 0.0005, 0.0002]
+  training.weight_decay: [0.0001, 0.00005, 0.00001]
+  training.huber_delta: [0.25, 0.5, 1.0]
+  training.early_stop_patience: [8, 10, 12]
+  model.hidden_sizes:
+    - [128, 64, 32]
+    - [256, 128, 64]
+    - [256, 128, 32]
+  model.dropout: [0.1, 0.15, 0.2]
+  model.activation: ["relu", "gelu"]

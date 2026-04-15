@@ -1,5 +1,6 @@
 """Scikit-learn compatible wrapper for PyTorch models."""
 import os
+from time import perf_counter
 
 import numpy as np
 import torch
@@ -49,12 +50,14 @@ class TorchModelWrapper:
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.lr)
         self.scaler = StandardScaler()
 
-    def fit(self, X, y):
+    def fit(self, X, y, X_val=None, y_val=None):
         """Fit the model to the data.
         
         Args:
             X: Input features
             y: Target values
+            X_val: Optional validation features
+            y_val: Optional validation targets
             
         Returns:
             self
@@ -72,6 +75,14 @@ class TorchModelWrapper:
             X = torch.FloatTensor(X)
             y = torch.FloatTensor(y.reshape(-1))  # Ensure 1D tensor
 
+            # Optional validation tensors
+            has_val = X_val is not None and y_val is not None
+            if has_val:
+                X_val = self.scaler.transform(np.asarray(X_val))
+                y_val = np.asarray(y_val)
+                X_val = torch.FloatTensor(X_val).to(self.device)
+                y_val = torch.FloatTensor(y_val.reshape(-1)).to(self.device)
+
             # Create dataset and loader
             dataset = TensorDataset(X, y)
             loader = DataLoader(dataset, batch_size=self.batch_size, shuffle=True)
@@ -79,7 +90,12 @@ class TorchModelWrapper:
 
             # Training loop
             self.model.train()
+            self.training_history_ = []
+            self.best_epoch_ = None
+            self.best_val_rmse_ = None
+
             for epoch in range(self.epochs):
+                t0 = perf_counter()
                 total_loss = 0
                 for batch_X, batch_y in loader:
                     # Move batch to device
@@ -93,9 +109,42 @@ class TorchModelWrapper:
                     self.optimizer.step()
                     total_loss += loss.item()
 
+                avg_loss = total_loss / len(loader)
+                cur_lr = float(self.optimizer.param_groups[0]["lr"])
+
+                row = {
+                    "epoch": int(epoch),
+                    "train_mse": float(avg_loss),
+                    "lr": cur_lr,
+                    "elapsed_s": float(perf_counter() - t0),
+                }
+
+                if has_val:
+                    self.model.eval()
+                    with torch.no_grad():
+                        val_pred = self.model(X_val)
+                        val_mse = nn.MSELoss()(val_pred, y_val).item()
+                        val_mae = nn.L1Loss()(val_pred, y_val).item()
+                        val_rmse = float(np.sqrt(val_mse))
+                    self.model.train()
+
+                    row["val_mae"] = float(val_mae)
+                    row["val_rmse"] = float(val_rmse)
+
+                    if self.best_val_rmse_ is None or val_rmse < self.best_val_rmse_:
+                        self.best_val_rmse_ = float(val_rmse)
+                        self.best_epoch_ = int(epoch)
+
+                self.training_history_.append(row)
+
                 if (epoch + 1) % 10 == 0:
-                    avg_loss = total_loss / len(loader)
-                    print(f"Epoch {epoch + 1}/{self.epochs}, Loss: {avg_loss:.6f}")
+                    if has_val:
+                        print(
+                            f"Epoch {epoch + 1}/{self.epochs}, "
+                            f"Loss: {avg_loss:.6f}, Val RMSE: {row['val_rmse']:.6f}"
+                        )
+                    else:
+                        print(f"Epoch {epoch + 1}/{self.epochs}, Loss: {avg_loss:.6f}")
 
             print("Training completed successfully")
 

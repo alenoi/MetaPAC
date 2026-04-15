@@ -5,6 +5,8 @@ Manages registration and retrieval of architecture adapters.
 """
 from typing import Dict, Type, Optional
 
+from metapac.src.model_profiles import resolve_architecture_name, resolve_model_profile_from_name
+
 from .base import ArchitectureAdapter
 
 
@@ -69,6 +71,9 @@ class AdapterRegistry:
         Returns:
             Adapter class, or None if no match found
         """
+        profile = resolve_model_profile_from_name(model_name)
+        if profile.architecture in self._adapters:
+            return self._adapters[profile.architecture]
         for adapter_class in self._adapters.values():
             if any(model_name.startswith(m) for m in adapter_class.supported_models):
                 return adapter_class
@@ -131,6 +136,9 @@ def auto_detect_architecture(metadata: dict) -> Optional[str]:
     # Check base_model in v2.0 format
     if 'base_model' in metadata:
         model_name = metadata['base_model']
+        resolved = resolve_architecture_name(model_name)
+        if resolved != 'generic':
+            return resolved
         adapter = get_adapter_for_model(model_name)
         if adapter:
             return adapter.architecture_name

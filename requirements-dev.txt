@@ -1,0 +1,8 @@
+# Development dependencies
+pytest>=7.0
+flake8>=6.0
+black>=23.0
+mypy>=1.5
+isort>=5.12
+psutil>=5.9
+pypdf>=4.2

@@ -15,9 +15,9 @@ from metapac.src.feature_extraction.builder import build_meta_dataset, load_conf
 
 def main():
     ap = argparse.ArgumentParser(description="MetaPAC feature extraction pipeline")
-    ap.add_argument("--input", required=True, help="Bemeneti mappa (pl. artifacts)")
-    ap.add_argument("--config", required=True, help="Konfigurációs YAML")
-    ap.add_argument("--out", required=True, help="Kimeneti mappa (pl. artifacts/meta_dataset)")
+    ap.add_argument("--input", required=True, help="Input directory (for example: artifacts)")
+    ap.add_argument("--config", required=True, help="Configuration YAML")
+    ap.add_argument("--out", required=True, help="Output directory (for example: artifacts/meta_dataset)")
     args = ap.parse_args()
 
     cfg = load_config(args.config)

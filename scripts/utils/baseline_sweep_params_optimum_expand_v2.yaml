@@ -1,0 +1,11 @@
+# Baseline fine-tune sweep space (v2)
+# Focused extension beyond edge-hit values from previous run.
+
+search_space:
+  baseline_finetune.train.learning_rate: [7.0e-05, 8.0e-05, 1.0e-04]
+  baseline_finetune.train.weight_decay: [0.0, 0.01]
+  baseline_finetune.train.num_train_epochs: [6, 7, 8]
+  baseline_finetune.train.per_device_train_batch_size: [16, 32]
+  baseline_finetune.train.per_device_eval_batch_size: [64]
+  baseline_finetune.train.gradient_accumulation_steps: [1, 2]
+  baseline_finetune.train.warmup_ratio: [0.03, 0.04]

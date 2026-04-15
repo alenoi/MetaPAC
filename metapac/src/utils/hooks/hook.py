@@ -6,14 +6,14 @@ import pandas as pd
 import torch
 
 
-def _tensor_stats(x: torch.Tensor, prefix: str = "") -> Dict[str, Any]:
-    """Per-tensor alapstatisztikák kis batch-re optimalizálva."""
+def _tensor_stats(x: torch.Tensor, prefix: str = "", include_quantiles: bool = True) -> Dict[str, Any]:
+    """Per-tensor basic statistics optimized for small batches."""
     x = x.detach()
     numel = x.numel()
     if numel == 0:
         return {f"{prefix}numel": 0}
 
-    # A legtöbb stat GPU-n számolható; csak a kvantiliseket visszük le CPU-ra szükség esetén
+    # Most statistics can be computed on the GPU; only quantiles fall back to CPU if needed.
     mean = x.mean().item()
     std = x.std(unbiased=False).item()
     amin = x.amin().item()
@@ -21,18 +21,11 @@ def _tensor_stats(x: torch.Tensor, prefix: str = "") -> Dict[str, Any]:
     l2 = torch.linalg.vector_norm(x).item()
     l1 = torch.linalg.vector_norm(x, ord=1).item()
 
-    # Sparsity: abs(x) < eps arány
+    # Sparsity: ratio of abs(x) < eps.
     eps = 1e-12 if x.dtype in (torch.float32, torch.float64, torch.float16, torch.bfloat16) else 0
     sparsity = (x.abs() < eps).float().mean().item()
 
-    # Kvantilisek kis mintán opcionálisak, de hasznosak
-    try:
-        q = torch.quantile(x.float(), torch.tensor([0.25, 0.5, 0.75], device=x.device))
-        q25, q50, q75 = q[0].item(), q[1].item(), q[2].item()
-    except Exception:
-        q25 = q50 = q75 = float("nan")
-
-    return {
+    stats = {
         f"{prefix}numel": numel,
         f"{prefix}mean": mean,
         f"{prefix}std": std,
@@ -41,16 +34,27 @@ def _tensor_stats(x: torch.Tensor, prefix: str = "") -> Dict[str, Any]:
         f"{prefix}l2": l2,
         f"{prefix}l1": l1,
         f"{prefix}sparsity": sparsity,
-        f"{prefix}q25": q25,
-        f"{prefix}q50": q50,
-        f"{prefix}q75": q75,
     }
+
+    # Quantiles are optional because they can add noticeable overhead.
+    if include_quantiles:
+        try:
+            q = torch.quantile(x.float(), torch.tensor([0.25, 0.5, 0.75], device=x.device))
+            stats[f"{prefix}q25"] = q[0].item()
+            stats[f"{prefix}q50"] = q[1].item()
+            stats[f"{prefix}q75"] = q[2].item()
+        except Exception:
+            stats[f"{prefix}q25"] = float("nan")
+            stats[f"{prefix}q50"] = float("nan")
+            stats[f"{prefix}q75"] = float("nan")
+
+    return stats
 
 
 @dataclass
 class Record:
     step: int
-    phase: str  # "forward" vagy "backward"
+    phase: str  # "forward" or "backward"
     module: str
     shape: Tuple[int, ...]
     device: str
@@ -61,8 +65,8 @@ class Record:
 
 class HookManager:
     """
-    Egységes hook-kezelő forward és backward mérésekhez.
-    Használat:
+    Unified hook manager for forward and backward measurements.
+    Usage:
         hm = HookManager()
         hm.register(module, "name", capture="both")
         ...
@@ -78,6 +82,8 @@ class HookManager:
             capture_grads_of: str = "output",  # "output" vagy "input"
             store_on_cpu: bool = False,
             keep_tensors: bool = False,
+            capture_every_n_steps: int = 1,
+            include_quantiles: bool = True,
     ):
         self._handles: List[torch.utils.hooks.RemovableHandle] = []
         self._records: List[Record] = []
@@ -86,6 +92,11 @@ class HookManager:
         self.capture_grads_of = capture_grads_of
         self.store_on_cpu = store_on_cpu
         self.keep_tensors = keep_tensors
+        self.capture_every_n_steps = max(1, int(capture_every_n_steps))
+        self.include_quantiles = bool(include_quantiles)
+
+    def _should_capture_current_step(self) -> bool:
+        return (self._step % self.capture_every_n_steps) == 0
 
     def clear(self):
         self._records.clear()
@@ -132,7 +143,7 @@ class HookManager:
         try:
             return self.reduce_fn(tensor)
         except Exception:
-            return tensor  # esésbiztos
+            return tensor  # Fail-safe fallback.
 
     def register_parameters(self, module: torch.nn.Module, prefix: str = ""):
         """
@@ -150,10 +161,10 @@ class HookManager:
             if param.requires_grad:
                 def make_param_hook(pname, p):
                     def param_grad_hook(grad):
-                        if grad is not None:
-                            stats = _tensor_stats(grad, prefix="grad_")
+                        if grad is not None and self._should_capture_current_step():
+                            stats = _tensor_stats(grad, prefix="grad_", include_quantiles=self.include_quantiles)
                             # Add parameter statistics
-                            param_stats = _tensor_stats(p.data, prefix="param_")
+                            param_stats = _tensor_stats(p.data, prefix="param_", include_quantiles=self.include_quantiles)
                             stats.update(param_stats)
                             self._pack_record(self._step, "parameter", pname, grad, stats)
                         return grad  # Don't modify gradient
@@ -164,35 +175,39 @@ class HookManager:
                 self._handles.append(handle)
 
     def register(self, module: torch.nn.Module, name: str, capture: str = "both"):
-        """capture: 'forward', 'backward' vagy 'both'."""
+        """capture: 'forward', 'backward', or 'both'."""
         cap_fwd = capture in ("forward", "both")
         cap_bwd = capture in ("backward", "both")
 
         if cap_fwd:
             def fwd_hook(mod, inp, out):
-                # out lehet tuple; egységesen az első tenzort mérjük
+                # out may be a tuple; consistently measure the first tensor.
                 tensor = out[0] if isinstance(out, (tuple, list)) else out
                 if not isinstance(tensor, torch.Tensor):
                     return
+                if not self._should_capture_current_step():
+                    return
                 ten = self._maybe_reduce(tensor)
-                stats = _tensor_stats(ten, prefix="act_")
+                stats = _tensor_stats(ten, prefix="act_", include_quantiles=self.include_quantiles)
                 self._pack_record(self._step, "forward", name, ten, stats)
 
             self._handles.append(module.register_forward_hook(fwd_hook))
 
         if cap_bwd:
-            # A backwardhoz a PyTorch 1.10+ "full_backward_hook"-ját használjuk.
+            # Use PyTorch 1.10+ full_backward_hook for backward capture.
             def bwd_hook(mod, gin, gout):
-                # grad_output vagy grad_input közül választunk
+                # Choose from grad_output or grad_input.
                 source = gout if self.capture_grads_of == "output" else gin
                 if not isinstance(source, (tuple, list)) or len(source) == 0:
                     return
                 tensor = source[0]
                 if tensor is None or not isinstance(tensor, torch.Tensor):
                     return
+                if not self._should_capture_current_step():
+                    return
                 ten = self._maybe_reduce(tensor)
-                stats = _tensor_stats(ten, prefix="actgrad_")
-                # Ugyanazt a step-et használjuk, amit a forward során növeltünk
+                stats = _tensor_stats(ten, prefix="actgrad_", include_quantiles=self.include_quantiles)
+                # Use the same step that was advanced during the forward pass.
                 self._pack_record(self._step, "backward", name, ten, stats)
 
             self._handles.append(module.register_full_backward_hook(bwd_hook))
@@ -219,7 +234,7 @@ class HookManager:
         return pd.DataFrame(rows)
 
     def capture(self):
-        """Context manager a step-ek szinkronizálásához."""
+        """Context manager for step synchronization."""
         manager = self
 
         class _Ctx:

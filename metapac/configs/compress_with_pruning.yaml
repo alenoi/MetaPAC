@@ -1,0 +1,90 @@
+# ============================================================================
+# COMPRESSION WITH PRUNING CONFIGURATION
+# ============================================================================
+# Full three-zone compression with structured pruning:
+#   - High importance: Keep full precision
+#   - Medium importance: Rank-aware quantization (4-8 bits)
+#   - Low importance: Structured pruning
+#   - Optional fine-tuning after compression
+#
+# Use this to experiment with compression + pruning without auto fine-tuning
+
+mode: compress
+
+# ============================================================================
+# COMPRESSION
+# ============================================================================
+compression:
+  # Model paths
+  target_model: "targets/distilbert/runs/baseline_distilbert_sst2"
+  meta_checkpoint: "metapac/runs/checkpoints/metapac_meta_distilbert_sst2"
+  output_dir: "targets/distilbert/models/experiments/compressed_pruned_v1"
+  
+  # Three-zone configuration
+  zones:
+    high:
+      quantile_min: 0.7
+      quantile_max: 1.0
+      action: "keep"
+    
+    medium:
+      quantile_min: 0.3
+      quantile_max: 0.7
+      action: "quantize"
+    
+    low:
+      quantile_min: 0.0
+      quantile_max: 0.3
+      action: "prune"
+  
+  # Quantization settings
+  quantization:
+    enabled: true
+    mode: "rank_aware_trim"
+    bits_lower: 4
+    bits_upper: 8
+    util_target: 0.98
+    per_channel: true
+    symmetric: true
+    clip_percentile: 0.0
+    export_int: true
+    export_packed: false
+    mapping:
+      type: "linear"
+    layer_overrides:
+      - pattern: ".*attention.*"
+        bits: 8
+      - pattern: ".*classifier.*"
+        bits: 8
+  
+  # Pruning settings (ENABLED)
+  pruning:
+    enabled: true
+    method: "importance"
+    physical: true
+    head_pruning_ratio: 0.25
+    ffn_pruning_ratio: 0.25
+    global_pruning: true
+    min_heads_per_layer: 2
+    min_ffn_ratio: 0.5
+    normalize_scores: true
+  
+  # Fine-tuning settings (DISABLED by default, enable for accuracy recovery)
+  fine_tuning:
+    enabled: false
+    output_dir: "targets/distilbert/models/experiments/compressed_pruned_v1/finetuned"
+    
+    data:
+      dataset: "glue"
+      dataset_config: "sst2"
+      max_length: 512
+      batch_size: 128
+    
+    training:
+      num_epochs: 2
+      learning_rate: 2e-5
+      weight_decay: 0.01
+      warmup_ratio: 0.1
+      gradient_clip: 1.0
+      device: "cuda"
+      num_workers: 0

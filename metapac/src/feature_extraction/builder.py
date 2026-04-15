@@ -124,6 +124,178 @@ def _collect_meta() -> Dict[str, Any]:
     }
 
 
+def build_feature_rows_from_dataframe(df: pd.DataFrame, config: BuildConfig) -> pd.DataFrame:
+    """Build training-style feature rows from normalized hook statistics.
+
+    This is the shared tabular feature pipeline used by both meta-dataset
+    construction and compression-time inference. It preserves per-step rows and
+    enriches them with epoch-level aggregate statistics, matching the feature
+    schema used during meta-model training.
+    """
+    # Apply phase filtering with robust fallback
+    if config.phases is not None and len(config.phases) > 0 and "phase" in df.columns:
+        df_filtered = df[df["phase"].isin(config.phases)].copy()
+        if df_filtered.empty:
+            available_phases = sorted(df['phase'].dropna().unique().tolist())
+            print(
+                f"[warn] Phase filter {config.phases} removed all rows; "
+                f"falling back to all phases present: {available_phases}"
+            )
+        else:
+            df = df_filtered
+
+    if df.empty:
+        raise ValueError(
+            "Input DataFrame is empty after loading/phase filtering. "
+            "Check input CSV files and 'phases' configuration."
+        )
+
+    has_listlike = ("activation_values" in df.columns) or ("grad_values" in df.columns)
+
+    candidate_group_keys = ["run_id", "epoch", "step", "module", "phase"]
+    group_keys = [k for k in candidate_group_keys if k in df.columns]
+    if not group_keys:
+        raise ValueError(
+            f"No valid grouping keys found in DataFrame. "
+            f"Available columns: {list(df.columns)}"
+        )
+
+    records = []
+    grouped_data = df.groupby(group_keys, sort=False, dropna=False)
+
+    for keys, group_df in grouped_data:
+        if not isinstance(keys, tuple):
+            keys = (keys,)
+        key_row = dict(zip(group_keys, keys))
+
+        if has_listlike:
+            activation_vectors, gradient_vectors = [], []
+
+            if "activation_values" in group_df.columns:
+                for arr in group_df["activation_values"].tolist():
+                    if arr is not None:
+                        reduced = apply_reducer(arr, config.reducer)
+                        if reduced is not None:
+                            activation_vectors.append(reduced)
+
+            if "grad_values" in group_df.columns:
+                for arr in group_df["grad_values"].tolist():
+                    if arr is not None:
+                        reduced = apply_reducer(arr, config.reducer)
+                        if reduced is not None:
+                            gradient_vectors.append(reduced)
+
+            activation_vectors = np.array(activation_vectors) if activation_vectors else np.array([])
+            gradient_vectors = np.array(gradient_vectors) if gradient_vectors else np.array([])
+
+            if config.token_average and activation_vectors.size:
+                activation_agg = np.nanmean(activation_vectors, axis=0)
+            elif activation_vectors.size:
+                activation_agg = activation_vectors.mean(axis=0)
+            else:
+                activation_agg = np.array([])
+
+            if config.token_average and gradient_vectors.size:
+                gradient_agg = np.nanmean(gradient_vectors, axis=0)
+            elif gradient_vectors.size:
+                gradient_agg = gradient_vectors.mean(axis=0)
+            else:
+                gradient_agg = np.array([])
+
+            row = {**key_row, "reducer": config.reducer}
+            row.update(_row_stats(activation_agg, "act"))
+            row.update(_row_stats(gradient_agg, "grad"))
+            records.append(row)
+        else:
+            activation_cols = [c for c in group_df.columns if c.startswith("act_")]
+            gradient_cols = [c for c in group_df.columns if c.startswith("grad_")]
+            param_cols = [c for c in group_df.columns if c.startswith("param_")]
+
+            row = {**key_row, "reducer": config.reducer}
+            if activation_cols:
+                row.update({c: group_df[c].astype(float).mean() for c in activation_cols})
+            if gradient_cols:
+                row.update({c: group_df[c].astype(float).mean() for c in gradient_cols})
+            if param_cols:
+                row.update({c: group_df[c].astype(float).mean() for c in param_cols})
+            records.append(row)
+
+    batch_df = pd.DataFrame.from_records(records)
+    if batch_df.empty:
+        raise ValueError(
+            f"Empty batch_df created. Available input columns: {list(df.columns)}. "
+            f"Check for 'activation_values'/'grad_values' or pre-computed 'act_*'/'grad_*' columns."
+        )
+
+    candidate_epoch_keys = ["run_id", "epoch", "module", "phase", "reducer"]
+    epoch_keys = [k for k in candidate_epoch_keys if k in batch_df.columns]
+    if not epoch_keys:
+        raise ValueError(
+            f"No keys available for epoch aggregation. "
+            f"Available batch_df columns: {list(batch_df.columns)}"
+        )
+
+    metric_cols = [
+        c for c in batch_df.columns
+        if c.startswith("act_") or c.startswith("grad_") or c.startswith("param_")
+    ]
+
+    print(f"[builder] Aggregating {len(metric_cols)} metric columns to epoch level...")
+    print(
+        f"[builder] Processing {len(batch_df):,} batch rows into ~{batch_df.groupby(epoch_keys).ngroups} epoch groups"
+    )
+
+    agg_dict = {}
+    for col in metric_cols:
+        agg_dict[col] = [
+            ('mean', 'mean'),
+            ('std', 'std'),
+            ('median', 'median'),
+            ('min', 'min'),
+            ('max', 'max'),
+            ('q25', lambda x: x.quantile(0.25)),
+            ('q75', lambda x: x.quantile(0.75)),
+            ('valid_samples', lambda x: x.notna().sum()),
+            ('valid_ratio', lambda x: x.notna().sum() / len(x))
+        ]
+
+    print("[builder] Running groupby aggregation (this may take 2-5 minutes)...")
+    epoch_agg = batch_df.groupby(epoch_keys, dropna=False, sort=False).agg(agg_dict)
+    epoch_agg.columns = [f'{col}_{agg}' if agg != '' else col for col, agg in epoch_agg.columns]
+    epoch_agg = epoch_agg.reset_index()
+
+    rename_map = {}
+    for col in metric_cols:
+        rename_map[f'{col}_mean'] = f'{col}_epoch_mean'
+        rename_map[f'{col}_std'] = f'{col}_epoch_std'
+        rename_map[f'{col}_median'] = f'{col}_epoch_median'
+        rename_map[f'{col}_min'] = f'{col}_epoch_min'
+        rename_map[f'{col}_max'] = f'{col}_epoch_max'
+        rename_map[f'{col}_q25'] = f'{col}_epoch_q25'
+        rename_map[f'{col}_q75'] = f'{col}_epoch_q75'
+        rename_map[f'{col}_valid_samples'] = f'{col}_epoch_valid_samples'
+        rename_map[f'{col}_valid_ratio'] = f'{col}_epoch_valid_ratio'
+
+    epoch_df = epoch_agg.rename(columns=rename_map)
+    print(f"[builder] ✓ Epoch aggregation complete: {len(epoch_df)} epoch groups created")
+
+    print(f"[builder] Merging epoch aggregations back into {len(batch_df):,} batch rows...")
+    merged = batch_df.merge(
+        epoch_df,
+        on=epoch_keys,
+        how="left",
+        suffixes=("", "_epoch_dup")
+    )
+    print(f"[builder] ✓ Merge complete: {len(merged):,} rows, {len(merged.columns)} columns")
+
+    dup_cols = [c for c in merged.columns if c.endswith("_epoch_dup")]
+    if dup_cols:
+        merged = merged.drop(columns=dup_cols)
+        print(f"[builder] Removed {len(dup_cols)} duplicate columns")
+
+    return merged
+
+
 def build_meta_dataset(input_dir: str, out_dir: str, config: BuildConfig) -> str:
     """Build aggregated meta-dataset from hook statistics.
     
@@ -177,190 +349,11 @@ def build_meta_dataset(input_dir: str, out_dir: str, config: BuildConfig) -> str
         print(f"[error] Failed to load hook CSVs: {str(e)}")
         raise
 
-    # Apply phase filtering with robust fallback
-    if config.phases is not None and len(config.phases) > 0 and "phase" in df.columns:
-        df_filtered = df[df["phase"].isin(config.phases)].copy()
-        if df_filtered.empty:
-            # Fall back to unfiltered dataframe if filter removes all rows
-            available_phases = sorted(df['phase'].dropna().unique().tolist())
-            print(
-                f"[warn] Phase filter {config.phases} removed all rows; "
-                f"falling back to all phases present: {available_phases}"
-            )
-        else:
-            df = df_filtered
-
-    if df.empty:
-        raise ValueError(
-            "Input DataFrame is empty after loading/phase filtering. "
-            "Check input CSV files and 'phases' configuration."
-        )
-
-    # Determine data source type (list-like tensors or scalar statistics)
-    has_listlike = ("activation_values" in df.columns) or ("grad_values" in df.columns)
-
-    # Build grouping keys from available columns
-    candidate_group_keys = ["run_id", "epoch", "step", "module", "phase"]
-    group_keys = [k for k in candidate_group_keys if k in df.columns]
-    if not group_keys:
-        raise ValueError(
-            f"No valid grouping keys found in DataFrame. "
-            f"Available columns: {list(df.columns)}"
-        )
-
-    # Process groups and aggregate statistics
-    records = []
-    grouped_data = df.groupby(group_keys, sort=False, dropna=False)
-
-    for keys, group_df in grouped_data:
-        # Ensure keys is always a tuple
-        if not isinstance(keys, tuple):
-            keys = (keys,)
-        key_row = dict(zip(group_keys, keys))
-
-        if has_listlike:
-            # Process list-like activation and gradient values
-            activation_vectors, gradient_vectors = [], []
-
-            # Extract and reduce activation values
-            if "activation_values" in group_df.columns:
-                for arr in group_df["activation_values"].tolist():
-                    if arr is not None:
-                        reduced = apply_reducer(arr, config.reducer)
-                        if reduced is not None:
-                            activation_vectors.append(reduced)
-
-            # Extract and reduce gradient values
-            if "grad_values" in group_df.columns:
-                for arr in group_df["grad_values"].tolist():
-                    if arr is not None:
-                        reduced = apply_reducer(arr, config.reducer)
-                        if reduced is not None:
-                            gradient_vectors.append(reduced)
-
-            # Convert to numpy arrays
-            activation_vectors = np.array(activation_vectors) if activation_vectors else np.array([])
-            gradient_vectors = np.array(gradient_vectors) if gradient_vectors else np.array([])
-
-            # Aggregate across tokens
-            if config.token_average and activation_vectors.size:
-                activation_agg = np.nanmean(activation_vectors, axis=0)
-            elif activation_vectors.size:
-                activation_agg = activation_vectors.mean(axis=0)
-            else:
-                activation_agg = np.array([])
-
-            if config.token_average and gradient_vectors.size:
-                gradient_agg = np.nanmean(gradient_vectors, axis=0)
-            elif gradient_vectors.size:
-                gradient_agg = gradient_vectors.mean(axis=0)
-            else:
-                gradient_agg = np.array([])
-
-            # Build record with statistics
-            row = {**key_row, "reducer": config.reducer}
-            row.update(_row_stats(activation_agg, "act"))
-            row.update(_row_stats(gradient_agg, "grad"))
-            records.append(row)
-        else:
-            # Scalar fallback: average existing act_/grad_/param_ columns within group
-            activation_cols = [c for c in group_df.columns if c.startswith("act_")]
-            gradient_cols = [c for c in group_df.columns if c.startswith("grad_")]
-            param_cols = [c for c in group_df.columns if c.startswith("param_")]
-
-            row = {**key_row, "reducer": config.reducer}
-            if activation_cols:
-                row.update({c: group_df[c].astype(float).mean() for c in activation_cols})
-            if gradient_cols:
-                row.update({c: group_df[c].astype(float).mean() for c in gradient_cols})
-            if param_cols:
-                row.update({c: group_df[c].astype(float).mean() for c in param_cols})
-            records.append(row)
-
-    # Create batch-level dataframe from records
-    batch_df = pd.DataFrame.from_records(records)
-    if batch_df.empty:
-        raise ValueError(
-            f"Empty batch_df created. Available input columns: {list(df.columns)}. "
-            f"Check for 'activation_values'/'grad_values' or pre-computed 'act_*'/'grad_*' columns."
-        )
-
-    # Build epoch-level aggregation keys from available columns
-    candidate_epoch_keys = ["run_id", "epoch", "module", "phase", "reducer"]
-    epoch_keys = [k for k in candidate_epoch_keys if k in batch_df.columns]
-    if not epoch_keys:
-        raise ValueError(
-            f"No keys available for epoch aggregation. "
-            f"Available batch_df columns: {list(batch_df.columns)}"
-        )
-
-    # Identify metric columns to aggregate
-    metric_cols = [c for c in batch_df.columns if
-                   c.startswith("act_") or c.startswith("grad_") or c.startswith("param_")]
-
-    print(f"[builder] Aggregating {len(metric_cols)} metric columns to epoch level...")
-    print(
-        f"[builder] Processing {len(batch_df):,} batch rows into ~{batch_df.groupby(epoch_keys).ngroups} epoch groups")
-
-    # Build aggregation dictionary for faster processing (using agg() instead of apply())
-    agg_dict = {}
-    for col in metric_cols:
-        agg_dict[col] = [
-            ('mean', 'mean'),
-            ('std', 'std'),
-            ('median', 'median'),
-            ('min', 'min'),
-            ('max', 'max'),
-            ('q25', lambda x: x.quantile(0.25)),
-            ('q75', lambda x: x.quantile(0.75)),
-            ('valid_samples', lambda x: x.notna().sum()),
-            ('valid_ratio', lambda x: x.notna().sum() / len(x))
-        ]
-
-    # Aggregate batch statistics to epoch level with progress bar
-    print("[builder] Running groupby aggregation (this may take 2-5 minutes)...")
-    epoch_agg = batch_df.groupby(epoch_keys, dropna=False, sort=False).agg(agg_dict)
-
-    # Flatten multi-level column names
-    epoch_agg.columns = [f'{col}_{agg}' if agg != '' else col for col, agg in epoch_agg.columns]
-    epoch_agg = epoch_agg.reset_index()
-
-    # Rename columns to match expected format
-    rename_map = {}
-    for col in metric_cols:
-        rename_map[f'{col}_mean'] = f'{col}_epoch_mean'
-        rename_map[f'{col}_std'] = f'{col}_epoch_std'
-        rename_map[f'{col}_median'] = f'{col}_epoch_median'
-        rename_map[f'{col}_min'] = f'{col}_epoch_min'
-        rename_map[f'{col}_max'] = f'{col}_epoch_max'
-        rename_map[f'{col}_q25'] = f'{col}_epoch_q25'
-        rename_map[f'{col}_q75'] = f'{col}_epoch_q75'
-        rename_map[f'{col}_valid_samples'] = f'{col}_epoch_valid_samples'
-        rename_map[f'{col}_valid_ratio'] = f'{col}_epoch_valid_ratio'
-
-    epoch_df = epoch_agg.rename(columns=rename_map)
-    print(f"[builder] ✓ Epoch aggregation complete: {len(epoch_df)} epoch groups created")
+    merged = build_feature_rows_from_dataframe(df, config)
 
     # Prepare output directory and metadata
     os.makedirs(out_dir, exist_ok=True)
     meta_info = _collect_meta()
-
-    # Merge epoch-level aggregations back into batch-level data
-    # This ensures each batch row has corresponding epoch statistics
-    print(f"[builder] Merging epoch aggregations back into {len(batch_df):,} batch rows...")
-    merged = batch_df.merge(
-        epoch_df,
-        on=epoch_keys,
-        how="left",
-        suffixes=("", "_epoch_dup")
-    )
-    print(f"[builder] ✓ Merge complete: {len(merged):,} rows, {len(merged.columns)} columns")
-
-    # Remove duplicate columns that might arise from the merge
-    dup_cols = [c for c in merged.columns if c.endswith("_epoch_dup")]
-    if dup_cols:
-        merged = merged.drop(columns=dup_cols)
-        print(f"[builder] Removed {len(dup_cols)} duplicate columns")
 
     # Convert numpy types to Python native types for JSON serialization
     def convert_to_native(obj: Any) -> Any:

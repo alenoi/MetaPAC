@@ -20,7 +20,7 @@ def find_repo_root(start: Path) -> Path:
 
 def must_exist(p: Path, name: str):
     if not p.exists():
-        print(f"[error] {name} nem található: {p}")
+        print(f"[error] {name} not found: {p}")
         sys.exit(1)
 
 
@@ -42,7 +42,7 @@ def cosine(a: torch.Tensor, b: torch.Tensor) -> float:
 def load_quantized_model_wrapper(comp_dir: Path, finetuned_dir: Path, baseline_dir: Path):
     from metapac.src.compression.load_quantized_model import load_quantized_model
 
-    # prefer FINETUNED weights as axis/reference
+    # Prefer FINETUNED weights as the axis/reference.
     if (finetuned_dir / "model.safetensors").exists():
         ref_sf = (finetuned_dir / "model.safetensors").as_posix()
     elif (finetuned_dir / "pytorch_model.bin").exists():
@@ -50,7 +50,7 @@ def load_quantized_model_wrapper(comp_dir: Path, finetuned_dir: Path, baseline_d
     else:
         ref_sf = None
 
-    # baseline optional (legacy)
+    # Baseline is optional (legacy).
     if (baseline_dir / "model.safetensors").exists():
         base_sf = (baseline_dir / "model.safetensors").as_posix()
     elif (baseline_dir / "pytorch_model.bin").exists():

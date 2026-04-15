@@ -39,8 +39,8 @@ Examples:
   # Run specific mode with config
   python -m metapac --mode compress --config metapac/configs/compress_distilbert_sst2.yaml
   
-  # Use config file (mode specified in config)
-  python -m metapac --config metapac/configs/auto_pipeline.yaml
+    # Use config file (mode specified in config)
+    python -m metapac --config metapac/configs/auto_distilbert_sst2_fast.yaml
         """
     )
 

@@ -14,9 +14,10 @@ warnings.filterwarnings('ignore', category=UserWarning, module='torch.cuda')
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
-from datasets import load_dataset
 from tqdm import tqdm
 import time
+
+from metapac.src.utils.dataset_repository import load_managed_dataset, resolve_dataset_reference
 
 if TYPE_CHECKING:
     from transformers import PreTrainedTokenizerBase
@@ -172,13 +173,24 @@ def _tokenize_dataset(
         dataset_config: str,
         split: str,
         *,
+        dataset_source: Optional[Dict[str, Any]],
+        dataset_processing: Optional[Dict[str, Any]],
         max_length: int,
         num_proc: Optional[int],
         max_samples: Optional[int]
 ) -> Tuple[Any, Dict[str, Any]]:
-    print(f"[validate] loading dataset {dataset_name}/{dataset_config} split={split}", flush=True)
+    resolved_name, resolved_config = resolve_dataset_reference(dataset_name, dataset_config)
+    print(f"[validate] loading dataset {resolved_name}/{resolved_config} split={split}", flush=True)
     load_start = time.time()
-    raw_ds = load_dataset(dataset_name, dataset_config, split=split)
+    managed = load_managed_dataset(
+        resolved_name,
+        resolved_config,
+        source_cfg=dataset_source,
+        processing_cfg=dataset_processing,
+    )
+    if split not in managed:
+        raise KeyError(f"Requested split '{split}' not found in managed dataset")
+    raw_ds = managed[split]
     if max_samples is not None:
         max_samples = min(max_samples, len(raw_ds))
         raw_ds = raw_ds.select(range(max_samples))
@@ -393,7 +405,7 @@ def _evaluate_model_once(
 
 def _has_quantized_modules(model: nn.Module) -> bool:
     for m in model.modules():
-        # igazítsd, ha más a kvant osztályneved
+        # Adjust this if your quantized class name differs.
         if m.__class__.__name__.startswith("CUDAQuantized"):
             return True
     return False
@@ -415,6 +427,8 @@ def validate_model(
         pre_dequantize: Optional[bool] = None,
         num_proc: Optional[int] = None,
         max_samples: Optional[int] = None,
+        dataset_source: Optional[Dict[str, Any]] = None,
+        dataset_processing: Optional[Dict[str, Any]] = None,
         subject_name: str = "subject",
         subject_path: Optional[Union[str, Path]] = None,
         subject_dataset: Optional[Any] = None,
@@ -484,6 +498,8 @@ def validate_model(
             dataset,
             dataset_config,
             split,
+            dataset_source=dataset_source,
+            dataset_processing=dataset_processing,
             max_length=max_length,
             num_proc=num_proc,
             max_samples=max_samples,

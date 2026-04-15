@@ -1,6 +1,7 @@
 # src/meta/calibration.py
-# Per-csoport affín kalibráció: ŷ' = a_g * ŷ + b_g
-# Pozitív a kényszerítésével nem rontjuk a Spearmant; ha a<0 jönne ki kis mintán, visszacsípjük kis pozitívra.
+# Per-group affine calibration: ŷ' = a_g * ŷ + b_g
+# Forcing a to remain positive preserves Spearman ordering; if a<0 on a small sample,
+# clamp it to a small positive value.
 
 from __future__ import annotations
 
@@ -17,13 +18,13 @@ class AffineCalib:
 
 
 def _fit_affine(y_true: np.ndarray, y_pred: np.ndarray, ridge: float = 1e-6) -> Tuple[float, float]:
-    # Megoldja min ||y - [y_pred, 1] @ [a, b]||^2 + ridge*||[a,b]||^2
+    # Solve min ||y - [y_pred, 1] @ [a, b]||^2 + ridge*||[a,b]||^2.
     X = np.stack([y_pred, np.ones_like(y_pred)], axis=1)
     XtX = X.T @ X + ridge * np.eye(2)
     Xty = X.T @ y_true
     a, b = np.linalg.solve(XtX, Xty)
     if a <= 0.0:
-        a = max(1e-6, a)  # rangmegőrzéshez ne legyen nempozitív
+        a = max(1e-6, a)  # Keep it positive to preserve ranking.
     return float(a), float(b)
 
 
@@ -39,7 +40,7 @@ def fit_groupwise_affine(
     y_pred = np.asarray(y_pred).astype(float)
     groups = np.asarray(groups).astype(str)
 
-    # Globális fallback
+    # Global fallback.
     a_glob, b_glob = _fit_affine(y_true, y_pred, ridge=ridge)
 
     unique = np.unique(groups)
@@ -50,7 +51,7 @@ def fit_groupwise_affine(
             continue
         a, b = _fit_affine(y_true[mask], y_pred[mask], ridge=ridge)
         out[g] = AffineCalib(a=a, b=b)
-    # „__GLOBAL__” kulcs tárolása is
+    # Store the "__GLOBAL__" key as well.
     out["__GLOBAL__"] = AffineCalib(a=a_glob, b=b_glob)
     return out
 

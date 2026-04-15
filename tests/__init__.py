@@ -1,0 +1,1 @@
+"""Synthetic smoke test suite for the compression pipeline."""
