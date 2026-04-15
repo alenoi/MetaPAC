@@ -69,6 +69,7 @@ targets/**/models/**
 !README.md
 !PROJECT_STRUCTURE.md
 !**/README.md
+!docs/*.md
 
 # --- Figures and diagrams ---
 **/*.pdf
