@@ -2,13 +2,14 @@
 
 MetaPAC is a research codebase for predictive adaptive compression of transformer models. The repository supports a staged workflow in which a baseline model is fine-tuned, parameter-level hook statistics are converted into a meta-dataset, a meta-predictor is trained on those statistics, and the learned signal is then used to guide pruning and variable-bit quantization.
 
-The active repository scope is the reproducible pipeline under `metapac/`, the curated entrypoint configs under `metapac/configs/`, the installation guide in `docs/INSTALLATION.md`, and the automated tests under `tests/`. Large checkpoints, generated datasets, logs, and experiment outputs are intentionally excluded from version control.
+The active repository scope is the reproducible pipeline under `metapac/`, the curated entrypoint configs under `metapac/configs/`, the public documentation under `docs/`, and the automated tests under `tests/`. Large checkpoints, generated datasets, logs, and experiment outputs are intentionally excluded from version control.
 
 ## Features
 
 - Meta-learning guided compression for ranking parameter importance before compression.
 - Hybrid pruning and variable-bit quantization within a single staged pipeline.
 - Modular compression architecture with explicit preparation, pruning, quantization, export, and validation phases.
+- Offline-oriented model and dataset sourcing with managed raw and split dataset caches.
 - Recovery fine-tuning support, including optional knowledge distillation.
 - CLI-first workflow with a small public Python API surface for dataset building and predictor usage.
 
@@ -108,23 +109,29 @@ python -m metapac --config metapac/configs/auto_distilbert_sst2_fast.yaml
 ## Research Handoff Notes
 
 - Baseline runs, meta-datasets, portable checkpoints, compressed models, and logs are generated locally and are gitignored by design.
+- Model and dataset sources can be resolved from local paths or from cached Hugging Face assets, including `local_files_only` workflows for disconnected environments.
+- Dataset materialization supports both raw caching and configured split caching under `metapac/artifacts/datasets`.
 - Compression configs may use a meta checkpoint prefix such as `metapac/runs/checkpoints/metapac_meta_distilbert_sst2`; MetaPAC resolves this to the latest matching portable checkpoint directory.
 - Direct compression entrypoints assume that the corresponding baseline run and meta-predictor checkpoint have already been produced.
-- The repository no longer carries model-specific helper pipelines under `targets/<model>/src`; `targets/` is treated as a runtime output layout, not a source package surface.
 
 ## Runtime Layout
 
 The active branch expects runtime-generated outputs to appear in these locations:
 
 - `metapac/artifacts/raw` for hook statistics.
+- `metapac/artifacts/datasets` for managed raw and split dataset caches.
 - `metapac/artifacts/meta_dataset` for generated meta-datasets.
 - `metapac/runs/checkpoints` for portable meta-predictor checkpoints.
 - `targets/<model>/runs/...` for baseline fine-tuning outputs.
-- `targets/<model>/models/experiments/...` for compression outputs.
+- `targets/<model>/models/experiments/.../finetuned` for loadable recovered models with updated weights in the original tensor shapes.
+- `targets/<model>/models/experiments/.../compressed` for compressed exports and metadata used to measure compression results.
 
 ## Documentation Map
 
 - `docs/INSTALLATION.md` - environment setup and verification
+- `docs/DATASETS.md` - dataset sourcing, caching, splits, and offline workflows
+- `docs/MODELS.md` - shared model handling, supported families, and current loader boundaries
+- `docs/TESTING.md` - synthetic smoke test scope, commands, and limitations
 - `metapac/configs/README.md` - curated config index
 
 ## Requirements
@@ -136,13 +143,13 @@ The active branch expects runtime-generated outputs to appear in these locations
 
 ## Testing
 
+The active automated suite is a synthetic smoke suite focused on pipeline behavior, artifact layout, and offline-safe execution. For scope, markers, and current boundaries, see `docs/TESTING.md`.
+
 Run the active automated suite from the repository root:
 
 ```bash
 python -m pytest tests -q
 ```
-
-The current test strategy is a self-contained synthetic smoke suite. It exercises the active pipeline and model-handler integration without requiring checked-in checkpoints, notebooks, or fixture-heavy experiment outputs.
 
 ## Citation
 
