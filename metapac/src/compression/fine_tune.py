@@ -36,6 +36,12 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 import yaml
 
+from metapac.src.utils.hf_sources import (
+    load_sequence_classification_model_from_source,
+    load_tokenizer_from_source,
+)
+from metapac.src.utils.dataset_repository import load_managed_dataset, resolve_dataset_reference
+
 try:
     from transformers import (
         AutoTokenizer,
@@ -48,6 +54,51 @@ except ImportError:
     print("Warning: transformers and datasets not available. Fine-tuning will be limited.")
 
 logger = logging.getLogger(__name__)
+
+
+def _resolve_runtime_device(requested: Optional[str]) -> str:
+    """Resolve runtime device safely with graceful fallback.
+
+    - "auto" prefers CUDA, then MPS, then CPU.
+    - Explicit "cuda" falls back to CPU if CUDA is unavailable.
+    - Explicit "mps" falls back to CPU if MPS is unavailable.
+    """
+    runtime = str(requested or "auto").lower()
+
+    if runtime == "auto":
+        if torch.cuda.is_available():
+            return "cuda"
+        if getattr(torch.backends, "mps", None) and torch.backends.mps.is_available():
+            return "mps"
+        return "cpu"
+
+    if runtime.startswith("cuda"):
+        if torch.cuda.is_available():
+            return runtime
+        logger.warning("Requested CUDA fine-tuning device, but CUDA is unavailable. Falling back to CPU.")
+        return "cpu"
+
+    if runtime.startswith("mps"):
+        if getattr(torch.backends, "mps", None) and torch.backends.mps.is_available():
+            return runtime
+        logger.warning("Requested MPS fine-tuning device, but MPS is unavailable. Falling back to CPU.")
+        return "cpu"
+
+    return runtime
+
+
+def _resolve_model_reference(model_ref: Optional[str]) -> Optional[str]:
+    """Resolve local model references to absolute paths when possible.
+
+    Keeps non-local references (e.g., HF hub IDs) unchanged.
+    """
+    if not model_ref:
+        return model_ref
+
+    candidate = Path(model_ref)
+    if candidate.exists():
+        return str(candidate.resolve())
+    return model_ref
 
 
 class KnowledgeDistillationLoss(nn.Module):
@@ -147,8 +198,8 @@ class FineTuner:
         self.warmup_ratio = float(config.get('warmup_ratio', 0.1))
         self.gradient_clip = float(config.get('gradient_clip', 1.0))
 
-        # Device
-        self.device = config.get('device', 'cuda' if torch.cuda.is_available() else 'cpu')
+        # Device (robust to unavailable CUDA builds)
+        self.device = _resolve_runtime_device(config.get('device', 'auto'))
         self.model.to(self.device)
         if self.teacher_model is not None:
             self.teacher_model.to(self.device)
@@ -401,11 +452,13 @@ def load_pruned_model(checkpoint_path: str, base_model: str = None) -> nn.Module
     Returns:
         Loaded model.
     """
+    checkpoint_path = _resolve_model_reference(checkpoint_path)
+    base_model = _resolve_model_reference(base_model)
     logger.info(f"Loading pruned model from: {checkpoint_path}")
 
     # Try to load as transformers model
     try:
-        model = AutoModelForSequenceClassification.from_pretrained(checkpoint_path)
+        model = load_sequence_classification_model_from_source(checkpoint_path, {"mode": "local"})
         logger.info("Loaded model using transformers AutoModel")
     except Exception as e:
         # Fallback: load state dict directly
@@ -413,11 +466,20 @@ def load_pruned_model(checkpoint_path: str, base_model: str = None) -> nn.Module
         logger.info("Attempting to load state dict...")
 
         checkpoint_dir = Path(checkpoint_path)
-        state_path = checkpoint_dir / "model_state.pt"
+        state_candidates = [
+            checkpoint_dir / "model_state.pt",
+            checkpoint_dir / "pytorch_model.bin",
+            checkpoint_dir / "model.safetensors",
+            checkpoint_dir / "model.pt",
+        ]
+        state_path = next((p for p in state_candidates if p.exists()), None)
         compression_summary_path = checkpoint_dir / "compression_summary.json"
 
-        if not state_path.exists():
-            raise FileNotFoundError(f"Model state not found: {state_path}")
+        if state_path is None:
+            raise FileNotFoundError(
+                f"Model state not found in checkpoint dir: {checkpoint_dir}. "
+                f"Checked: {[str(p.name) for p in state_candidates]}"
+            )
 
         # Try to get base model from compression summary
         if base_model is None and compression_summary_path.exists():
@@ -425,6 +487,7 @@ def load_pruned_model(checkpoint_path: str, base_model: str = None) -> nn.Module
             with open(compression_summary_path) as f:
                 summary = json.load(f)
                 base_model = summary.get('target_model')
+                base_model = _resolve_model_reference(base_model)
                 logger.info(f"Found base model in compression summary: {base_model}")
 
         if base_model is None:
@@ -435,11 +498,15 @@ def load_pruned_model(checkpoint_path: str, base_model: str = None) -> nn.Module
 
         # Load base model architecture
         logger.info(f"Loading base model architecture from: {base_model}")
-        model = AutoModelForSequenceClassification.from_pretrained(base_model)
+        model = load_sequence_classification_model_from_source(base_model)
 
         # Load compressed state dict
         logger.info(f"Loading state dict from: {state_path}")
-        state_dict = torch.load(state_path, map_location='cpu')
+        if state_path.suffix == '.safetensors':
+            from safetensors.torch import load_file
+            state_dict = load_file(str(state_path), device='cpu')
+        else:
+            state_dict = torch.load(state_path, map_location='cpu')
 
         # Load state dict with strict=False to handle pruned parameters
         missing_keys, unexpected_keys = model.load_state_dict(state_dict, strict=False)
@@ -469,23 +536,56 @@ def prepare_data_loaders(
     """
     dataset_name = config.get('dataset', 'glue')
     dataset_config = config.get('dataset_config', 'sst2')
+    dataset_source = config.get('source')
     max_length = int(config.get('max_length', 512))
     batch_size = int(config.get('batch_size', 32))
 
-    logger.info(f"Loading dataset: {dataset_name}/{dataset_config}")
-    logger.info("Using offline mode for dataset loading")
-
+    resolved_name, resolved_config = resolve_dataset_reference(dataset_name, dataset_config)
+    logger.info(f"Loading dataset: {resolved_name}/{resolved_config}")
     try:
-        dataset = load_dataset(dataset_name, dataset_config)
+        dataset = load_managed_dataset(
+            resolved_name,
+            resolved_config,
+            source_cfg=dataset_source,
+            processing_cfg=config,
+        )
     except Exception as e:
-        logger.error(f"Failed to load dataset: {e}")
+        logger.error(f"Failed to load managed dataset: {e}")
         raise
+
+    # Determine text fields (dataset-specific)
+    train_columns = list(dataset['train'].column_names)
+
+    if 'sentence' in train_columns:
+        text_fields = ['sentence']
+    elif 'text' in train_columns:
+        text_fields = ['text']
+    elif 'sentence1' in train_columns and 'sentence2' in train_columns:
+        text_fields = ['sentence1', 'sentence2']
+    elif 'premise' in train_columns and 'hypothesis' in train_columns:
+        text_fields = ['premise', 'hypothesis']
+    else:
+        # Fallback: first non-label textual column
+        candidate = [c for c in train_columns if c != 'label']
+        if not candidate:
+            raise KeyError("No text column found in dataset")
+        text_fields = [candidate[0]]
+
+    logger.info(f"Using text fields for tokenization: {text_fields}")
 
     # Tokenize with dynamic padding (more memory efficient)
     def tokenize_function(examples):
+        if len(text_fields) == 1:
+            return tokenizer(
+                examples[text_fields[0]],
+                padding=False,  # Dynamic padding in DataLoader
+                truncation=True,
+                max_length=max_length
+            )
         return tokenizer(
-            examples['sentence'],
-            padding=False,  # Dynamic padding in DataLoader
+            examples[text_fields[0]],
+            examples[text_fields[1]],
+            padding=False,
             truncation=True,
             max_length=max_length
         )
@@ -509,6 +609,29 @@ def prepare_data_loaders(
 
     # Create data collator for dynamic padding
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
+
+    if 'validation' not in tokenized_dataset:
+        raise ValueError(
+            "Managed fine-tuning dataset does not provide a validation split. "
+            "Configure split_strategy/ratios so the dataset repository materializes one."
+        )
+
+    # Optional sample caps for faster/controlled fine-tuning
+    train_max_samples = config.get('train_max_samples')
+    if train_max_samples is not None:
+        train_max_samples = int(train_max_samples)
+        if train_max_samples > 0:
+            n_train = min(train_max_samples, len(tokenized_dataset['train']))
+            tokenized_dataset['train'] = tokenized_dataset['train'].select(range(n_train))
+            logger.info(f"Applied train_max_samples cap: {n_train}")
+
+    validation_max_samples = config.get('validation_max_samples')
+    if validation_max_samples is not None:
+        validation_max_samples = int(validation_max_samples)
+        if validation_max_samples > 0:
+            n_val = min(validation_max_samples, len(tokenized_dataset['validation']))
+            tokenized_dataset['validation'] = tokenized_dataset['validation'].select(range(n_val))
+            logger.info(f"Applied validation_max_samples cap: {n_val}")
 
     # Create data loaders with dynamic padding
     logger.info("Creating data loaders...")
@@ -564,10 +687,13 @@ def run_fine_tuning(config: Dict[str, Any]) -> int:
                 base_model_for_tokenizer = summary.get('target_model', model_checkpoint)
                 logger.info(f"Using base model for tokenizer: {base_model_for_tokenizer}")
 
+        base_model_for_tokenizer = _resolve_model_reference(base_model_for_tokenizer)
+        model_source = config.get('model_source')
+
         # Load model and tokenizer
         logger.info("Loading model and tokenizer...")
-        model = load_pruned_model(model_checkpoint)
-        tokenizer = AutoTokenizer.from_pretrained(base_model_for_tokenizer)
+        model = load_pruned_model(model_checkpoint, base_model=base_model_for_tokenizer)
+        tokenizer = load_tokenizer_from_source(base_model_for_tokenizer, model_source)
 
         # Load teacher model for Knowledge Distillation (if enabled)
         teacher_model = None
@@ -578,9 +704,12 @@ def run_fine_tuning(config: Dict[str, Any]) -> int:
             teacher_model_path = kd_config.get('teacher_model', None)
             if teacher_model_path:
                 try:
+                    teacher_model_path = _resolve_model_reference(teacher_model_path)
                     logger.info(f"Loading teacher model for Knowledge Distillation from: {teacher_model_path}")
-                    teacher_model = AutoModelForSequenceClassification.from_pretrained(
+                    teacher_source = kd_config.get('teacher_source')
+                    teacher_model = load_sequence_classification_model_from_source(
                         str(teacher_model_path),
+                        teacher_source,
                         device_map='cuda' if torch.cuda.is_available() else 'cpu'
                     )
                     logger.info(f"Teacher model loaded successfully")

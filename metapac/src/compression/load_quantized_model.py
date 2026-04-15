@@ -143,12 +143,14 @@ def replace_with_quantized(model: nn.Module, meta: Dict[str, Dict]) -> Dict[str,
     return stats
 
 
-def load_quantized_distilbert(model_dir: str,
-                              device: str = "auto",
-                              config_path: Optional[str] = None) -> nn.Module:
-    """
-    Build a DistilBERT model, then replace linear/embedding layers with quantized versions
-    according to variable_bit_meta.json in model_dir.
+def load_quantized_model(model_dir: str,
+                         device: str = "auto",
+                         config_path: Optional[str] = None) -> nn.Module:
+    """Load a quantized Hugging Face sequence-classification model.
+
+    The architecture is reconstructed from the saved config in ``model_dir`` or
+    ``config_path`` and then its linear/embedding layers are replaced using the
+    variable-bit metadata saved by MetaPAC export.
     """
     model_dir_p = Path(model_dir)
     cfg_dir = Path(config_path) if config_path is not None else model_dir_p
@@ -193,3 +195,13 @@ def load_quantized_distilbert(model_dir: str,
     if dev != "cpu":
         model = model.to(dev)
     return model
+
+
+def load_quantized_distilbert(model_dir: str,
+                              device: str = "auto",
+                              config_path: Optional[str] = None) -> nn.Module:
+    """Backward-compatible alias for legacy callers.
+
+    Deprecated: use ``load_quantized_model``.
+    """
+    return load_quantized_model(model_dir=model_dir, device=device, config_path=config_path)

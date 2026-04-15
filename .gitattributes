@@ -1,0 +1,41 @@
+# --- Base settings ---
+* text=auto eol=lf
+
+# --- Source code (Python, Shell, YAML, etc.) ---
+*.py text diff=python
+*.ipynb text
+*.sh text eol=lf
+*.yml text
+*.yaml text
+*.toml text
+*.json text
+
+# --- Documentation (Markdown, LaTeX) ---
+*.md text diff=markdown
+*.tex text diff=tex
+*.bib text
+*.sty text
+*.cls text
+
+# --- Configuration and Makefile ---
+Makefile text
+*.cfg text
+*.ini text
+
+# --- Notes and binary documents are not diffable ---
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.svg binary
+
+# --- Models and experiment outputs ---
+*.pt binary
+*.pth binary
+*.ckpt binary
+*.npz binary
+*.npy binary
+
+# --- Notebook outputs ---
+*.ipynb filter=jupyternotebook
+

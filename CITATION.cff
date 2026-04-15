@@ -7,7 +7,7 @@ authors:
   - family-names: "Panyi"
     given-names: "Tamás"
 date-released: 2025-12-15
-version: "0.1.0"
+version: "0.2.0"
 license: "MIT"
 repository-code: "https://github.com/alenoi/metapac"
 preferred-citation:
@@ -16,7 +16,7 @@ preferred-citation:
   authors:
     - family-names: "Panyi"
       given-names: "Tamás"
-  year: 2025
+  year: 2026
   institution: "Óbudai Egyetem"
-  version: "0.1.0"
+  version: "0.2.0"
   url: "https://github.com/alenoi/metapac"

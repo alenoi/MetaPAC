@@ -22,7 +22,7 @@ from ..utils.seed import set_seed
 
 
 # -----------------------------
-# Loss: Huber (config alapján)
+# Loss: Huber (config-driven)
 # -----------------------------
 class HuberLoss(torch.nn.Module):
     def __init__(self, delta: float = 1.0, reduction: str = "mean"):
@@ -44,7 +44,7 @@ class HuberLoss(torch.nn.Module):
 
 
 # --------------------------------------
-# Affín kalibráció (globális vagy group)
+# Affine calibration (global or groupwise)
 # --------------------------------------
 @dataclass
 class AffineCalib:
@@ -99,7 +99,7 @@ def apply_groupwise_affine(y_pred: np.ndarray, groups: np.ndarray, params: Dict[
 
 
 # -----------------------------
-# Config betöltése
+# Load config
 # -----------------------------
 def load_config(path: str) -> Dict[str, Any]:
     with open(path, "r", encoding="utf-8") as f:
@@ -107,7 +107,7 @@ def load_config(path: str) -> Dict[str, Any]:
 
 
 # -----------------------------
-# Eval segédfüggvények
+# Evaluation helpers
 # -----------------------------
 @torch.no_grad()
 def predict(model: torch.nn.Module, loader: DataLoader, device: torch.device) -> Tuple[np.ndarray, np.ndarray]:
@@ -174,7 +174,7 @@ def main() -> None:
 
     device = torch.device(cfg["training"]["device"] if torch.cuda.is_available() else "cpu")
 
-    # Dataloaderek
+    # Dataloaders.
     train_ds = TensorDataset(torch.from_numpy(X_tr).float(), torch.from_numpy(y_tr).float())
     val_ds = TensorDataset(torch.from_numpy(X_va).float(), torch.from_numpy(y_va).float())
     test_ds = TensorDataset(torch.from_numpy(X_te).float(), torch.from_numpy(y_te).float())
@@ -186,7 +186,7 @@ def main() -> None:
     test_loader = DataLoader(test_ds, batch_size=int(cfg["training"]["batch_size"]), shuffle=False,
                              num_workers=int(cfg["training"]["num_workers"]), pin_memory=(device.type == "cuda"))
 
-    # Modell
+    # Model.
     model = MLPRegressor(
         in_dim=X_tr.shape[1],
         hidden_sizes=list(map(int, cfg["model"]["hidden_sizes"])) if "hidden_sizes" in cfg["model"] else [256, 128, 64],
@@ -198,19 +198,32 @@ def main() -> None:
                               weight_decay=float(cfg["training"]["weight_decay"]))
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optim, mode="min", factor=0.5, patience=3)
 
-    # Loss
+    # Loss.
     use_huber = str(cfg["training"].get("loss", "huber")).lower() == "huber"
     huber_delta = float(cfg["training"].get("huber_delta", 1.0))
     criterion = HuberLoss(delta=huber_delta) if use_huber else torch.nn.MSELoss()
 
-    # Logger
+    # Logger.
     run_name = cfg.get("experiment_name", "meta_baseline")
     logger = TrainLogger(run_dir="runs", run_name=run_name, use_progress=False)
     total_steps = len(train_loader)
 
+    # Detailed but lightweight curve logging:
+    # - keep epoch-level history as before
+    # - add sparse step-level points for smoother plots
+    points_per_epoch = int(cfg["training"].get("history_points_per_epoch", 10))
+    points_per_epoch = max(1, points_per_epoch)
+    history_every_n_steps = int(cfg["training"].get("history_every_n_steps", 0))
+    if history_every_n_steps <= 0:
+        history_every_n_steps = max(1, total_steps // points_per_epoch)
+
     best_val_rmse = float("inf")
+    best_epoch = -1
     patience = int(cfg["training"]["early_stop_patience"])
     stall = 0
+    training_history = []
+    train_step_history = []
+    global_step = 0
 
     # -----------------------------
     # Training loop
@@ -221,7 +234,7 @@ def main() -> None:
         epoch_loss = 0.0
 
         prog = tqdm(train_loader, total=total_steps, leave=False, ncols=120, desc=f"Epoch {epoch:03d}")
-        for xb, yb in prog:
+        for step_idx, (xb, yb) in enumerate(prog, start=1):
             xb = xb.to(device)
             yb = yb.to(device)
             optim.zero_grad(set_to_none=True)
@@ -232,6 +245,16 @@ def main() -> None:
             epoch_loss += float(loss.item()) * xb.size(0)
             cur_lr = optim.param_groups[0]["lr"]
             prog.set_postfix_str(f"loss={loss.item():.5f} lr={cur_lr:.2e}")
+            global_step += 1
+
+            if (step_idx % history_every_n_steps == 0) or (step_idx == total_steps):
+                train_step_history.append({
+                    "epoch": int(epoch),
+                    "step_in_epoch": int(step_idx),
+                    "global_step": int(global_step),
+                    "train_loss": float(loss.item()),
+                    "lr": float(cur_lr),
+                })
 
         epoch_loss /= max(1, len(train_loader.dataset))
 
@@ -243,6 +266,7 @@ def main() -> None:
         improved = val_metrics["rmse"] < best_val_rmse - 1e-6
         if improved:
             best_val_rmse = val_metrics["rmse"]
+            best_epoch = epoch
             stall = 0
             # Save portable checkpoint with preprocessing pipeline
             checkpoint_dir = Path(f"artifacts/checkpoints/{run_name}_best")
@@ -266,6 +290,17 @@ def main() -> None:
             stall += 1
 
         elapsed = perf_counter() - t0
+        training_history.append({
+            "epoch": int(epoch),
+            "train_mse": float(epoch_loss),
+            "val_mae": float(val_metrics["mae"]),
+            "val_rmse": float(val_metrics["rmse"]),
+            "val_spearman": float(val_metrics["spearman"]),
+            "lr": float(cur_lr),
+            "elapsed_s": float(elapsed),
+            "improved": bool(improved),
+        })
+
         logger.end_epoch(LogRow(epoch=epoch, step=total_steps, train_mse=epoch_loss, val_mae=val_metrics["mae"],
                                 val_rmse=val_metrics["rmse"], val_spearman=val_metrics["spearman"], lr=cur_lr,
                                 elapsed_s=elapsed, improved=improved))
@@ -275,7 +310,7 @@ def main() -> None:
             break
 
     # -----------------------------
-    # Load best és final eval
+    # Load best and final eval.
     # -----------------------------
     checkpoint_dir = Path(f"artifacts/checkpoints/{run_name}_best")
     model_state_path = checkpoint_dir / "model_state.pt"
@@ -286,7 +321,7 @@ def main() -> None:
     test_metrics, y_test_pred, y_test_true = evaluate(model, test_loader, device, df_slice=df_te, split_name="test")
 
     # -----------------------------
-    # Post-hoc calibration (opcionális)
+    # Post-hoc calibration (optional).
     # -----------------------------
     calib_enabled = bool(cfg["training"].get("calibration_enabled", False))
     calib_mode = str(cfg["training"].get("calibration_mode", "global"))
@@ -324,7 +359,7 @@ def main() -> None:
         test_rmse_cal = test_metrics["rmse"]
         test_spear_cal = test_metrics.get("spearman_group", test_metrics["spearman"])
 
-    # Összegzés
+    # Summary.
 
     from metapac.src.utils.pretty_table import draw_table
 
@@ -335,16 +370,23 @@ def main() -> None:
              test_metrics.get("spearman_group", test_metrics["spearman"])],
             ["calibrated", test_mae_cal, test_rmse_cal, test_spear_cal],
         ],
-        # col_width=None  # ← nem adunk meg szélességet → AUTOFIT per oszlop
+        # col_width=None  # Leave width unspecified to enable per-column autofit.
         padding=1,
         float_fmt=".3e",
         title="TEST metrics"
     )
 
     summary = {
+        "run_name": run_name,
+        "best_epoch": int(best_epoch) if best_epoch >= 0 else None,
         "val_best_rmse": float(best_val_rmse),
+        "num_epochs_trained": int(len(training_history)),
+        "training_history": training_history,
+        "train_step_history": train_step_history,
+        "history_every_n_steps": int(history_every_n_steps),
         "test_uncalib": {"mae": float(test_metrics["mae"]), "rmse": float(test_metrics["rmse"]),
                          "spearman": float(test_metrics.get("spearman_group", test_metrics["spearman"]))},
+        "test_calib": {"mae": float(test_mae_cal), "rmse": float(test_rmse_cal), "spearman": float(test_spear_cal)},
     }
     Path("metapac/runs").mkdir(parents=True, exist_ok=True)
     with open(f"metapac/runs/{run_name}_metrics.json", "w", encoding="utf-8") as f:

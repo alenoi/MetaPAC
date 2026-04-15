@@ -1,0 +1,139 @@
+# ============================================================================
+# STRATEGY DEFAULTS CONFIGURATION
+# ============================================================================
+# Default values for compression strategy (run_compression)
+# These values are used as fallbacks when not specified in user configs
+# DO NOT modify this file directly - override values in your compression config
+
+# ============================================================================
+# COMPRESSION DEFAULTS
+# ============================================================================
+compression:
+  # Model paths
+  target_model: "targets/distilbert/runs/baseline_distilbert_sst2"
+  baseline_model_config: null  # Defaults to target_model if not specified
+  
+  # Output directory for compressed models
+  output_dir: null  # Defaults to "{target_model}/models/experiments/variant_test" if not specified
+  
+  # Meta-predictor checkpoint (portable directory format)
+  meta_checkpoint: "metapac/runs/checkpoints/metapac_meta_distilbert_sst2"
+  
+  # ============================================================================
+  # ZONES CONFIGURATION (Three-zone strategy)
+  # ============================================================================
+  zones:
+    high:
+      threshold_percentile: 70  # Top 30% most important
+      action: "keep"  # No compression
+    medium:
+      threshold_percentile: 30  # Middle 40%
+      action: "quantize"  # Rank-aware quantization
+    low:
+      threshold_percentile: 0  # Bottom 30%
+      action: "prune"  # Remove (if pruning enabled)
+  
+  # ============================================================================
+  # QUANTIZATION DEFAULTS
+  # ============================================================================
+  quantization:
+    enabled: true
+    mode: "rank_aware_trim"
+    
+    # Bit-width range for variable-bit quantization
+    bits_lower: 4
+    bits_upper: 8
+    
+    # Utilization target (headroom trimming)
+    util_target: 0.98  # 98% utilization
+    
+    # Per-channel quantization
+    per_channel: true
+    
+    # Export formats
+    export_int: false  # INT8 export (fast inference)
+    export_variable_bit: true  # Variable-bit export (best compression)
+    export_packed: false  # Binary packed export (storage)
+  
+  # ============================================================================
+  # PRUNING DEFAULTS
+  # ============================================================================
+  pruning:
+    enabled: false
+    method: "magnitude"
+    
+    # Pruning ratios
+    head_pruning_ratio: 0.3  # 30% heads pruned
+    ffn_pruning_ratio: 0.3  # 30% FFN neurons pruned
+    
+    # Physical vs soft pruning
+    physical: true  # True = remove weights, False = mask to zero
+    
+    # Layer-wise pruning
+    layer_wise: true
+  
+  # ============================================================================
+  # FINE-TUNING DEFAULTS
+  # ============================================================================
+  fine_tuning:
+    enabled: false
+    
+    output_dir: null  # Defaults to "{output_dir}/finetuned" if not specified
+    
+    # Data configuration
+    data:
+      dataset: "glue"
+      dataset_config: "sst2"
+      max_length: 128
+      batch_size: 8
+    
+    # Training configuration
+    training:
+      num_epochs: 1  # 1-3 epochs recommended for recovery
+      learning_rate: 2.0e-5
+      weight_decay: 0.01
+      warmup_ratio: 0.1
+      gradient_clip: 1.0
+      device: "cuda"
+      num_workers: 0
+    
+    # Distillation configuration (optional)
+    distillation:
+      enabled: false
+      teacher_model: null
+      temperature: 2.0
+      alpha: 0.5
+  
+  # ============================================================================
+  # VALIDATION DEFAULTS
+  # ============================================================================
+  validation:
+    enabled: false
+    
+    # Model to validate (defaults to compressed model)
+    baseline_model: null  # Defaults to target_model if not specified
+    
+    # Dataset configuration
+    dataset: "glue"
+    dataset_config: "sst2"
+    split: "validation"
+    
+    # Inference configuration
+    runtime: "auto"  # "auto", "cpu", "cuda"
+    device: null  # Alternative to runtime
+    batch_size: 32
+    max_length: 128
+    
+    # Performance options
+    warmup_steps: 2
+    disable_progress: false
+    max_samples: null  # Process all samples if null
+    
+    # Quantization behavior
+    pre_dequantize: null  # Force dequantization before inference
+    allow_runtime_fallback: true
+    
+    # Results
+    save_results: true
+
+

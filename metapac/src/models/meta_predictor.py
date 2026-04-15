@@ -411,13 +411,16 @@ def _build_model(task_type: str, cfg: Dict[str, Any]) -> Pipeline:
     input_size = cfg.get("model", {}).get("input_size", 64)
     model = TorchMetaPredictor(cfg, input_size=input_size)
 
+    training_cfg = cfg.get("training", {})
+
     # Wrap with scikit-learn compatible interface
     from .wrappers import TorchModelWrapper
     wrapped_model = TorchModelWrapper(
         model=model,
-        batch_size=cfg.get("batch_size", 32),
-        epochs=cfg.get("epochs", 100),
-        learning_rate=cfg.get("learning_rate", 0.001)
+        batch_size=int(training_cfg.get("batch_size", cfg.get("batch_size", 32))),
+        epochs=int(training_cfg.get("max_epochs", cfg.get("epochs", 100))),
+        learning_rate=float(training_cfg.get("lr", cfg.get("learning_rate", 0.001))),
+        device=training_cfg.get("device", None),
     )
 
     return wrapped_model
@@ -529,6 +532,30 @@ def train_and_eval(cfg: Dict[str, Any]) -> int:
     # Select features and target
     X, y, target_col, feature_cols = _select_columns(df, cfg)
 
+    # Force numeric types and sanitize non-finite values (vectorized for speed)
+    X = X.apply(pd.to_numeric, errors="coerce")
+    y = pd.to_numeric(y, errors="coerce")
+
+    X_values = X.to_numpy(dtype=np.float64, copy=True)
+    x_non_finite_mask = ~np.isfinite(X_values)
+    if x_non_finite_mask.any():
+        X_values[x_non_finite_mask] = np.nan
+    X = pd.DataFrame(X_values, columns=X.columns, index=X.index)
+
+    y_values = y.to_numpy(dtype=np.float64, copy=True)
+    y_non_finite_mask = ~np.isfinite(y_values)
+    if y_non_finite_mask.any():
+        y_values[y_non_finite_mask] = np.nan
+    y = pd.Series(y_values, index=y.index)
+
+    # Drop rows with invalid targets after conversion/sanitization
+    valid_target_mask = y.notna()
+    dropped_target_rows = int((~valid_target_mask).sum())
+    if dropped_target_rows > 0:
+        print(f"[meta_predictor] Dropping {dropped_target_rows} rows with invalid target values")
+        X = X.loc[valid_target_mask]
+        y = y.loc[valid_target_mask]
+
     # Infer or use configured task type
     task = cfg.get("task_type") or infer_task_type(y.to_numpy())
     print(f"[meta_predictor] Task type: {task}  | target: {target_col}  | n_features: {len(feature_cols)}")
@@ -544,6 +571,19 @@ def train_and_eval(cfg: Dict[str, Any]) -> int:
     feature_imputer = SimpleImputer(strategy="mean")
     X = pd.DataFrame(feature_imputer.fit_transform(X), columns=X.columns, index=X.index)
 
+    # Final numeric safety pass for features/target
+    X_values = np.nan_to_num(X.to_numpy(dtype=np.float64), nan=0.0, posinf=1e12, neginf=-1e12)
+    X = pd.DataFrame(X_values, columns=X.columns, index=X.index)
+    y = pd.Series(np.nan_to_num(y.to_numpy(dtype=np.float64), nan=0.0, posinf=1e12, neginf=-1e12), index=y.index)
+
+    # Optional robust clipping to reduce gradient explosion on heavy-tailed targets
+    clip_pct = float(cfg.get("target_clip_percentile", 99.9))
+    if 50.0 <= clip_pct < 100.0:
+        limit = float(np.nanpercentile(np.abs(y.to_numpy()), clip_pct))
+        if np.isfinite(limit) and limit > 0:
+            y = y.clip(lower=-limit, upper=limit)
+            print(f"[meta_predictor] Clipped target to ±{limit:.4g} (p{clip_pct})")
+
     # Update configuration with actual input size after preprocessing
     cfg["model"] = cfg.get("model", {})
     cfg["model"]["input_size"] = len(X.columns)
@@ -557,7 +597,11 @@ def train_and_eval(cfg: Dict[str, Any]) -> int:
 
     # Build and train model
     model_pipeline = _build_model(task, cfg)
-    model_pipeline.fit(X_train, y_train)
+    model_pipeline.fit(X_train, y_train, X_val=X_val, y_val=y_val)
+
+    training_history = getattr(model_pipeline, "training_history_", [])
+    best_epoch = getattr(model_pipeline, "best_epoch_", None)
+    best_val_rmse = getattr(model_pipeline, "best_val_rmse_", None)
 
     # Generate predictions and compute metrics
     if task == "regression":
@@ -599,6 +643,9 @@ def train_and_eval(cfg: Dict[str, Any]) -> int:
                 "n_train": int(len(X_train)),
                 "n_val": int(len(X_val)),
                 "metrics": metrics_dict,
+                "training_history": training_history,
+                "best_epoch": int(best_epoch) if best_epoch is not None else None,
+                "best_val_rmse": float(best_val_rmse) if best_val_rmse is not None else None,
                 "config": cfg
             }
         )
@@ -632,6 +679,9 @@ def train_and_eval(cfg: Dict[str, Any]) -> int:
         "n_train": int(len(X_train)),
         "n_val": int(len(X_val)),
         "metrics": metrics_dict,
+        "training_history": training_history,
+        "best_epoch": int(best_epoch) if best_epoch is not None else None,
+        "best_val_rmse": float(best_val_rmse) if best_val_rmse is not None else None,
         "checkpoint": checkpoint_path_str,
         "feature_importances_csv": str(output_paths["fi_csv"]) if feature_importances is not None else None,
         "config_used": cfg,

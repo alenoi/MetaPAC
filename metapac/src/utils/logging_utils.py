@@ -7,6 +7,7 @@ Provides consistent, timestamped logging across all modules.
 import logging
 import sys
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
 
 
@@ -42,7 +43,48 @@ class ColoredFormatter(logging.Formatter):
             return f"[{timestamp}] [{level_colored}] {record.getMessage()}"
 
 
-def setup_logger(name: str, level: int = logging.INFO) -> logging.Logger:
+_logging_settings: dict = {}
+_configured_loggers: dict[str, logging.Logger] = {}
+
+
+def _resolve_level(level: int | str | None) -> int:
+    if isinstance(level, int):
+        return level
+    if isinstance(level, str):
+        return int(getattr(logging, level.upper(), logging.INFO))
+    return logging.INFO
+
+
+def _build_handlers(name: str, settings: dict, level: int, default_log_dir: Optional[str]) -> list[logging.Handler]:
+    handlers: list[logging.Handler] = []
+
+    if settings.get("console_enabled", True):
+        console_handler = logging.StreamHandler(sys.stdout)
+        console_handler.setLevel(level)
+        console_handler.setFormatter(ColoredFormatter())
+        handlers.append(console_handler)
+
+    if settings.get("file_enabled", False):
+        log_dir = Path(settings.get("dir") or default_log_dir or "logs")
+        log_dir.mkdir(parents=True, exist_ok=True)
+        filename = settings.get("filename") or f"{name.split('.')[-1]}.log"
+        file_handler = logging.FileHandler(log_dir / filename, encoding="utf-8")
+        file_handler.setLevel(level)
+        file_handler.setFormatter(
+            logging.Formatter("[%(asctime)s] [%(levelname)s] %(name)s: %(message)s")
+        )
+        handlers.append(file_handler)
+
+    return handlers
+
+
+def setup_logger(
+    name: str,
+    level: int | str = logging.INFO,
+    *,
+    settings: Optional[dict] = None,
+    default_log_dir: Optional[str] = None,
+) -> logging.Logger:
     """
     Set up a logger with consistent formatting.
     
@@ -53,19 +95,39 @@ def setup_logger(name: str, level: int = logging.INFO) -> logging.Logger:
     Returns:
         Configured logger
     """
+    merged_settings = dict(_logging_settings)
+    if settings:
+        merged_settings.update(settings)
+    resolved_level = _resolve_level(merged_settings.get("level", level))
+
     logger = logging.getLogger(name)
-    logger.setLevel(level)
+    logger.setLevel(resolved_level)
+    logger.propagate = False
 
     # Remove existing handlers
     logger.handlers = []
 
-    # Console handler
-    console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setLevel(level)
-    console_handler.setFormatter(ColoredFormatter())
-    logger.addHandler(console_handler)
+    for handler in _build_handlers(name, merged_settings, resolved_level, default_log_dir):
+        logger.addHandler(handler)
+
+    _configured_loggers[name] = logger
 
     return logger
+
+
+def configure_logging(settings: Optional[dict] = None, *, default_log_dir: Optional[str] = None) -> None:
+    global _logging_settings
+
+    merged = dict(_logging_settings)
+    if settings:
+        merged.update(settings)
+    if default_log_dir and "dir" not in merged:
+        merged["dir"] = default_log_dir
+
+    _logging_settings = merged
+
+    for name in list(_configured_loggers):
+        setup_logger(name, settings=_logging_settings, default_log_dir=default_log_dir)
 
 
 def log_phase_header(logger: logging.Logger, phase: str, description: str = ""):
@@ -106,6 +168,10 @@ _default_logger = None
 def get_logger(name: Optional[str] = None) -> logging.Logger:
     """Get or create the default logger."""
     global _default_logger
-    if _default_logger is None:
-        _default_logger = setup_logger(name or 'metapac')
-    return _default_logger
+    logger_name = name or 'metapac'
+    if logger_name in _configured_loggers:
+        return _configured_loggers[logger_name]
+    if _default_logger is None or logger_name == 'metapac':
+        _default_logger = setup_logger(logger_name, settings=_logging_settings)
+        return _default_logger
+    return setup_logger(logger_name, settings=_logging_settings)

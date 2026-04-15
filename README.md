@@ -1,216 +1,153 @@
 # MetaPAC: Meta-learning based Predictive Adaptive Compression
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg)](https://pytorch.org/)
+MetaPAC is a research codebase for predictive adaptive compression of transformer models. The repository supports a staged workflow in which a baseline model is fine-tuned, parameter-level hook statistics are converted into a meta-dataset, a meta-predictor is trained on those statistics, and the learned signal is then used to guide pruning and variable-bit quantization.
 
-MetaPAC is a meta-learning based framework for predictive adaptive compression of transformer models. It combines pruning and quantization techniques with meta-learned predictions to achieve optimal compression while maintaining model performance.
+The active repository scope is the reproducible pipeline under `metapac/`, the curated entrypoint configs under `metapac/configs/`, the installation guide in `docs/INSTALLATION.md`, and the automated tests under `tests/`. Large checkpoints, generated datasets, logs, and experiment outputs are intentionally excluded from version control.
 
 ## Features
 
-- **Meta-learning based compression**: Predict optimal compression configurations using learned meta-models
-- **Hybrid compression**: Combines structured/unstructured pruning with variable-bit quantization
-- **Flexible pipeline**: Modular architecture supporting various compression strategies
-- **Fine-tuning integration**: Post-compression fine-tuning with knowledge distillation
-- **CLI & Python API**: Easy-to-use command-line interface and programmatic access
+- Meta-learning guided compression for ranking parameter importance before compression.
+- Hybrid pruning and variable-bit quantization within a single staged pipeline.
+- Modular compression architecture with explicit preparation, pruning, quantization, export, and validation phases.
+- Recovery fine-tuning support, including optional knowledge distillation.
+- CLI-first workflow with a small public Python API surface for dataset building and predictor usage.
 
 ## Installation
 
-```bash
-pip install metapac
-```
+For environment bootstrap and verification, see `docs/INSTALLATION.md`.
 
-Or install from source:
+This branch is currently published as a source-first research repository rather than a packaged `pip install metapac` release.
+
+Typical local setup:
 
 ```bash
-git clone https://github.com/alenoi/MetaPAC.git
-cd MetaPAC
-pip install -e .
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+pip install -r requirements-dev.txt
+python -m pytest tests -q
 ```
 
 ## Quick Start
 
 ### Using the CLI
 
-**Full automatic pipeline:**
+Full automatic pipeline with a curated example config:
+
+```bash
+python -m metapac --config metapac/configs/auto_distilbert_sst2_fast.yaml
+```
+
+Run the default full pipeline without an explicit config path:
+
 ```bash
 python -m metapac --mode auto
 ```
 
-**Compress a model with configuration:**
+Run a single compression stage with the retained default compression config:
+
 ```bash
-python -m metapac --mode compress --config examples/configs/compress_distilbert_sst2.yaml
+python -m metapac --mode compress --config metapac/configs/compress_distilbert_sst2.yaml
 ```
 
-**Extract features for meta-learning:**
+Build the meta-dataset only:
+
 ```bash
-python -m metapac --mode feature_extract --config examples/configs/feature_extraction.yaml
+python -m metapac --mode feature_extract --config metapac/configs/feature_extraction.yaml
 ```
 
-**Train meta-predictor:**
+Train the default meta-predictor only:
+
 ```bash
-python -m metapac --mode train_meta --config examples/configs/meta_distilbert_sst2.yaml
+python -m metapac --mode train_meta --config metapac/configs/meta_distilbert_sst2.yaml
 ```
 
 ### Using the Python API
 
-```python
-from metapac import build_meta_dataset, TorchMetaPredictor, TorchModelWrapper
+The public Python surface retained in this branch includes:
 
-# Build meta-dataset from a model
-config = {
-    "model_name": "distilbert-base-uncased",
-    "dataset": "glue",
-    "dataset_config": "sst2"
-}
-meta_dataset = build_meta_dataset(config)
+- `build_meta_dataset`
+- `BuildConfig`
+- `TorchMetaPredictor`
+- `TorchModelWrapper`
+- `HookManager`
+- `HookHFCallback`
 
-# Train meta-predictor
-predictor = TorchMetaPredictor()
-predictor.train(meta_dataset)
+## Pipeline Entry Points
 
-# Use for compression prediction
-wrapper = TorchModelWrapper(model)
-predictions = predictor.predict(wrapper)
+MetaPAC exposes the following stages through `python -m metapac`:
+
+- `baseline_finetune`
+- `feature_extract`
+- `train_meta`
+- `compress`
+- `auto`
+- `auto:STAGE`
+
+The default `auto` mode runs the full sequence `baseline_finetune -> feature_extract -> train_meta -> compress`.
+
+The CLI accepts:
+
+- `--mode MODE` to run a specific stage or `auto:STAGE` entrypoint.
+- `--config PATH` to load a YAML config and optionally override the mode.
+
+## Recommended Researcher Workflows
+
+The curated auto configs currently intended for active use are:
+
+- `metapac/configs/auto_distilbert_sst2_fast.yaml`
+- `metapac/configs/auto_distilgpt2_imdb_fast.yaml`
+- `metapac/configs/auto_qwen3_wos_fast.yaml`
+- `metapac/configs/auto_qwen3_wos_fast_offline.yaml`
+
+Example:
+
+```bash
+python -m metapac --config metapac/configs/auto_distilbert_sst2_fast.yaml
 ```
 
-## CLI Reference
+## Research Handoff Notes
 
-### Modes
+- Baseline runs, meta-datasets, portable checkpoints, compressed models, and logs are generated locally and are gitignored by design.
+- Compression configs may use a meta checkpoint prefix such as `metapac/runs/checkpoints/metapac_meta_distilbert_sst2`; MetaPAC resolves this to the latest matching portable checkpoint directory.
+- Direct compression entrypoints assume that the corresponding baseline run and meta-predictor checkpoint have already been produced.
+- The repository no longer carries model-specific helper pipelines under `targets/<model>/src`; `targets/` is treated as a runtime output layout, not a source package surface.
 
-- **`auto`**: Run full pipeline (baseline fine-tuning → feature extraction → meta-training → compression)
-- **`auto:feature_extract`**: Run from feature extraction onwards (skip baseline fine-tuning)
-- **`baseline_finetune`**: Fine-tune baseline model only
-- **`feature_extract`**: Extract features for meta-learning
-- **`train_meta`**: Train meta-predictor
-- **`compress`**: Compress model with optional fine-tuning
+## Runtime Layout
 
-### Command-line Arguments
+The active branch expects runtime-generated outputs to appear in these locations:
 
-- `--config PATH`: Path to YAML configuration file
-- `--mode MODE`: Pipeline mode to run
+- `metapac/artifacts/raw` for hook statistics.
+- `metapac/artifacts/meta_dataset` for generated meta-datasets.
+- `metapac/runs/checkpoints` for portable meta-predictor checkpoints.
+- `targets/<model>/runs/...` for baseline fine-tuning outputs.
+- `targets/<model>/models/experiments/...` for compression outputs.
 
-### Configuration Files
+## Documentation Map
 
-See `examples/configs/` for example configuration files:
-
-- **`compress_distilbert_sst2.yaml`**: Basic compression configuration
-- **`compress_with_finetuning.yaml`**: Compression with post-compression fine-tuning
-- **`feature_extraction.yaml`**: Feature extraction configuration
-- **`meta_distilbert_sst2.yaml`**: Meta-predictor training configuration
-
-### Scenario Presets
-
-Pre-configured compression scenarios in `examples/configs/scenarios/` (used in ablation studies):
-
-- **`prune_magnitude_logical_30.yaml`**: Pruning-only baseline (30% magnitude-based)
-- **`quant_vb_headroom_on.yaml`**: Quantization-only baseline (variable-bit 2-8 bits)
-- **`compress_finetune_no_kd.yaml`**: Combined pruning + quantization (no fine-tuning)
-- **`compress_finetune_kd.yaml`**: Full pipeline with knowledge distillation (recommended)
-
-## Configuration
-
-### Basic Configuration Structure
-
-```yaml
-mode: compress
-
-model:
-  name: "distilbert-base-uncased"
-  task: "sequence-classification"
-  
-dataset:
-  name: "glue"
-  config: "sst2"
-
-compression:
-  pruning:
-    enabled: true
-    ratio: 0.3
-    method: "magnitude"
-    
-  quantization:
-    enabled: true
-    method: "variable_bit"
-    bits: [2, 4, 6, 8]
-    
-fine_tuning:
-  enabled: true
-  epochs: 3
-  learning_rate: 2e-5
-  use_kd: true  # Knowledge distillation
-```
-
-### Advanced Options
-
-See example configurations for advanced options including:
-- Custom pruning strategies (magnitude, gradient-based, meta-predicted)
-- Variable-bit quantization with headroom optimization
-- Fine-tuning with knowledge distillation
-- Custom meta-predictor architectures
-
-## Pipeline Stages
-
-### 1. Feature Extraction
-Extract layer-level and parameter-level features from the model for meta-learning.
-
-### 2. Meta-Predictor Training
-Train a meta-model to predict optimal compression configurations based on extracted features.
-
-### 3. Compression
-Apply pruning and/or quantization based on meta-predictions or predefined strategies.
-
-### 4. Fine-tuning (Optional)
-Fine-tune compressed model with optional knowledge distillation from the original model.
-
-## Output Structure
-
-```
-targets/<model_name>/models/experiments/<experiment_name>/
-├── pruned_before_quant/      # Model after pruning
-├── quantized_before_ft/       # Model after quantization (fake-quant)
-├── finetuned/                 # Model after fine-tuning
-├── compressed/                # Final compressed model
-│   ├── pytorch_model.bin      # Fake-quant FP32 weights
-│   ├── model_packed.bin       # Packed variable-bit weights
-│   └── compression_config.json
-└── logs/                      # Training and compression logs
-```
+- `docs/INSTALLATION.md` - environment setup and verification
+- `metapac/configs/README.md` - curated config index
 
 ## Requirements
 
-- Python >= 3.8
-- PyTorch >= 2.0
-- Transformers >= 4.44
-- See `requirements.txt` for full dependency list
+- Python 3.12
+- PyTorch 2.x
+- Transformers 4.44+
+- Additional runtime and developer dependencies listed in `requirements.txt` and `requirements-dev.txt`
+
+## Testing
+
+Run the active automated suite from the repository root:
+
+```bash
+python -m pytest tests -q
+```
+
+The current test strategy is a self-contained synthetic smoke suite. It exercises the active pipeline and model-handler integration without requiring checked-in checkpoints, notebooks, or fixture-heavy experiment outputs.
 
 ## Citation
 
-If you use MetaPAC in your research, please cite:
-
-```bibtex
-@software{metapac2025,
-  title = {MetaPAC: Meta-learning based Predictive Adaptive Compression},
-  author = {Panyi, Tamás},
-  year = {2025},
-  version = {0.1.0},
-  institution = {Óbudai Egyetem},
-  url = {https://github.com/alenoi/metapac}
-}
-```
+If you use MetaPAC in research, please cite the metadata in `CITATION.cff`.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## Acknowledgments
-
-This research was conducted at Óbudai Egyetem (Óbuda University).
-
-## Support
-
-For questions, issues, or feature requests, please open an issue on [GitHub](https://github.com/alenoi/MetaPAC/issues).
+This project is licensed under the MIT License. See `LICENSE` for the full text.

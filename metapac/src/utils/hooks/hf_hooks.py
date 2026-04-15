@@ -1,12 +1,12 @@
 import os
 
-# Kompatibilitási wrapper a PyTorch és Transformers közötti verziókonfliktus kezelésére
+# Compatibility wrapper to handle version conflicts between PyTorch and Transformers.
 import torch.utils._pytree as _pytree
 
 
-# Wrapper függvény a paraméterek kezelésére
+# Wrapper function for parameter handling.
 def _register_pytree_wrapper(*args, **kwargs):
-    # Eltávolítjuk a 'serialized_type_name' paramétert, ha jelen van
+    # Remove the 'serialized_type_name' parameter if it is present.
     kwargs.pop('serialized_type_name', None)
     return _pytree._register_pytree_node(*args, **kwargs)
 
@@ -20,8 +20,8 @@ from transformers import TrainerCallback
 
 class HookHFCallback(TrainerCallback):
     """
-    HuggingFace Trainer-hez való callback.
-    Parameter-level hook statistics gyűjtése: grad_* és param_* per parameter.
+    Callback for the HuggingFace Trainer.
+    Collects parameter-level hook statistics: grad_* and param_* per parameter.
     
     Args:
         model: PyTorch model to attach hooks to.
@@ -29,8 +29,13 @@ class HookHFCallback(TrainerCallback):
         reduce_fn: Optional tensor reduction function.
     """
 
-    def __init__(self, model, out_dir="artifacts", reduce_fn=None):
-        self.hm = HookManager(reduce_fn=reduce_fn, store_on_cpu=True)
+    def __init__(self, model, out_dir="artifacts", reduce_fn=None, capture_every_n_steps: int = 1, include_quantiles: bool = True):
+        self.hm = HookManager(
+            reduce_fn=reduce_fn,
+            store_on_cpu=True,
+            capture_every_n_steps=capture_every_n_steps,
+            include_quantiles=include_quantiles,
+        )
         self.out_dir = out_dir
         os.makedirs(out_dir, exist_ok=True)
 
@@ -46,12 +51,12 @@ class HookHFCallback(TrainerCallback):
         print(f"[HookHFCallback] Registered parameter-level hooks for {hook_count} parameters")
 
     def on_step_begin(self, args, state, control, **kwargs):
-        # minden batch elején új "step"
+        # Start a new "step" at the beginning of every batch.
         self.hm.next_step()
 
     def on_epoch_end(self, args, state, control, **kwargs):
-        # epoch végén mentés
+        # Save at the end of each epoch.
         df = self.hm.to_dataframe()
         out_csv = os.path.join(self.out_dir, f"hook_stats_epoch{int(state.epoch)}.csv")
         df.to_csv(out_csv, index=False)
-        print(f"\n[HookHFCallback] Mentve: {out_csv}")
+        print(f"\n[HookHFCallback] Saved: {out_csv}")

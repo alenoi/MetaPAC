@@ -1,107 +1,105 @@
-# Byte-compiled / optimized / DLL files
+# --- Python general ---
 __pycache__/
 *.py[cod]
 *$py.class
 
-# C extensions
-*.so
-
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-pip-wheel-metadata/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
-
-# PyInstaller
-*.manifest
-*.spec
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# pyenv
-.python-version
-
-# Environments
+# --- Virtual environments ---
 .env
 .venv
 env/
 venv/
-ENV/
-env.bak/
-venv.bak/
+.conda/
+.ipynb_checkpoints/
 
-# IDEs
+# --- Build / cache ---
+*.egg-info/
+dist/
+build/
+
+# --- Jupyter notebook sidecar files ---
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# --- Data and experiments ---
+experiments/
+outputs/
+output/
+logs/
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+
+# --- Raw datasets (large files) ---
+data/raw/**/*.csv
+data/raw/**/*.txt
+data/raw/**/*.json
+data/processed/**/*.arrow
+data/processed/**/*.parquet
+
+# --- Run outputs and artifacts ---
+metapac/artifacts/
+metapac/results/**
+metapac/runs/**
+**/artifacts/
+targets/**/runs/**
+targets/**/models/**
+**/runs/logs/*.log
+**/runs/checkpoints/**/*.bin
+**/runs/checkpoints/**/*.pt
+**/runs/**/*.safetensors
+**/runs/**/*.bin
+**/runs/**/*.jinja
+**/*.txt
+**/*.log
+**/*.csv
+**/*.jsonl
+**/*.npy
+**/*.npz
+**/*.parquet
+**/events.out.tfevents.*
+
+# --- Keep structure files ---
+!**/README.md
+!**/.gitkeep
+!**/metadata_template.json
+
+# --- Markdown files (except README) ---
+*.md
+!README.md
+!PROJECT_STRUCTURE.md
+!**/README.md
+
+# --- Figures and diagrams ---
+**/*.pdf
+**/*.png
+**/*.svg
+**/*.jpg
+**/*.jpeg
+
+# --- IDE / Editor fájlok ---
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
+
+# --- OS fájlok ---
 .DS_Store
+Thumbs.db
 
-# MyPy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre type checker
-.pyre/
-
-# Model artifacts and outputs
-targets/
-artifacts/
-compressed/
-benchmark_output/
-logs/
-*.pt
-*.pth
-*.bin
-*.safetensors
-*.ckpt
-
-# Data files
-data/
-*.csv
+# --- Colab / Kaggle ---
 *.json
-*.h5
-*.hdf5
+.gdrive/
 
-# Temporary files
-temp/
-tmp/
+# --- Packaging and build ---
+pkg/
+*.tar.gz
+*.zip
+*.egg-info/
+
+# --- Miscellaneous ---
+*.bak
 *.tmp
-*.log
-
-# Mac
-.DS_Store
-.AppleDouble
-.LSOverride
+*.safetensors
+*.bin
+*.jinja

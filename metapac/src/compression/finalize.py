@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import json
 import shutil
-from datetime import datetime
+from datetime import datetime, UTC
 from pathlib import Path
 from typing import Dict, List
 
@@ -155,7 +155,7 @@ def finalize_artifacts(
 
     # Write a minimal manifest next to kept files for traceability
     manifest = {
-        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "experiment": str(exp),
         "compressed_dir": str(compressed),
         "policy": {

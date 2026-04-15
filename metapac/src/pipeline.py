@@ -18,7 +18,9 @@ import yaml
 
 from metapac.src.compression.strategy import run_compression
 from metapac.src.feature_extraction.extract import run_feature_extraction
+from metapac.src.model_handlers import create_handler_for_config
 from metapac.src.models.meta_predictor import train_and_eval
+from metapac.src.utils.logging_utils import configure_logging
 from metapac.src.utils.paths import PathRegistry
 
 # Import baseline fine-tuning (lazy import to avoid circular dependencies)
@@ -34,84 +36,10 @@ def run_baseline_finetune(config: Dict[str, Any]) -> int:
         Exit code (0 for success).
     """
     try:
-        import os
-        import torch
-        from metapac.src.models import ModelConfig, build_model
-        from targets.distilbert.src.core_utils import setup_logger, set_all_seeds, device_info, save_json
-        from targets.distilbert.src.data import DataConfig, load_tokenizer, load_and_prepare_datasets
-        from targets.distilbert.src.train import train_and_evaluate
-        
-        # Extract baseline_finetune config
-        finetune_cfg = config.get("baseline_finetune", {})
-        
-        print("[pipeline] ========================================")
-        print("[pipeline] Running baseline fine-tuning")
-        print("[pipeline] ========================================")
-        
-        logger = setup_logger()
-        
-        # Output directory and experiment name
-        exp_name = finetune_cfg.get("experiment_name", "baseline")
-        out_dir = finetune_cfg.get("output_dir", f"targets/distilbert/runs/{exp_name}")
-        os.makedirs(out_dir, exist_ok=True)
-        
-        # Seed and device info
-        seed = finetune_cfg.get("train", {}).get("seed", 42)
-        set_all_seeds(seed)
-        devinfo = device_info()
-        save_json(os.path.join(out_dir, "device.json"), devinfo)
-        save_json(os.path.join(out_dir, "config_resolved.json"), finetune_cfg)
-        
-        # Auto-detect precision
-        bf16_ok = torch.cuda.is_available() and torch.cuda.is_bf16_supported()
-        fp16_ok = torch.cuda.is_available()
-        
-        finetune_cfg.setdefault("train", {})
-        finetune_cfg["train"].setdefault("bf16", bool(bf16_ok))
-        finetune_cfg["train"].setdefault("fp16", bool(not bf16_ok and fp16_ok))
-        
-        # Load tokenizer and datasets
-        model_name = finetune_cfg["model"]["pretrained_name"]
-        tokenizer = load_tokenizer(model_name)
-        data_cfg = DataConfig(**finetune_cfg["dataset"])
-        datasets, num_labels, label_names = load_and_prepare_datasets(data_cfg, tokenizer)
-        
-        # Build model
-        model_cfg = ModelConfig(
-            pretrained_name=model_name,
-            dropout=finetune_cfg["model"].get("dropout", 0.1),
-            num_labels=num_labels,
-            labels=label_names,
-        )
-        model = build_model(model_cfg)
-        
-        # Optional: Gradient checkpointing
-        if finetune_cfg["train"].get("gradient_checkpointing", False):
-            if hasattr(model, "gradient_checkpointing_enable"):
-                model.gradient_checkpointing_enable()
-                logger.info("Gradient checkpointing ENABLED.")
-        
-        # Train and evaluate
-        summary = train_and_evaluate(
-            datasets=datasets,
-            tokenizer=tokenizer,
-            model=model,
-            out_dir=out_dir,
-            train_cfg=finetune_cfg["train"],
-            report_to=tuple(finetune_cfg.get("logging", {}).get("report_to", ["tensorboard"])),
-            dataloader_num_workers=finetune_cfg["train"].get("dataloader_num_workers", 2),
-        )
-        
-        # Save summary
-        save_json(os.path.join(out_dir, "summary_main.json"), summary)
-        logger.info("[pipeline] Baseline fine-tuning completed successfully")
-        logger.info(f"[pipeline] Results saved to: {out_dir}")
-        
-        return 0
-        
+        handler = create_handler_for_config(config)
+        return handler.run_baseline_finetune(config)
     except ImportError as e:
         print(f"[pipeline] ERROR: Failed to import baseline training modules: {e}")
-        print("[pipeline] Make sure targets/distilbert/src/ modules are available")
         import traceback
         traceback.print_exc()
         return 1
@@ -131,6 +59,167 @@ DEFAULT_CONFIGS = {
 
 # Pipeline stage ordering (baseline fine-tuning added at the beginning)
 PIPELINE_STAGES = ["baseline_finetune", "feature_extract", "train_meta", "compress"]
+
+
+def _deep_merge_dicts(base: Dict[str, Any], overrides: Dict[str, Any]) -> Dict[str, Any]:
+    """Recursively merge dictionaries without discarding nested defaults."""
+    merged: Dict[str, Any] = dict(base)
+    for key, value in overrides.items():
+        base_value = merged.get(key)
+        if isinstance(base_value, dict) and isinstance(value, dict):
+            merged[key] = _deep_merge_dicts(base_value, value)
+        else:
+            merged[key] = value
+    return merged
+
+
+def _to_repo_relative(path: Path, repo_root: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(repo_root.resolve()))
+    except Exception:
+        return str(path)
+
+
+def _run_slug(config: Dict[str, Any]) -> str:
+    candidates = [
+        config.get("run_id"),
+        config.get("run_tag"),
+        config.get("experiment_name"),
+        config.get("baseline_finetune", {}).get("experiment_name"),
+    ]
+    for candidate in candidates:
+        if isinstance(candidate, str) and candidate.strip():
+            return candidate.strip().replace("/", "_")
+    return "default_run"
+
+
+def _is_shared_hook_dir(path_value: str | None) -> bool:
+    if not path_value:
+        return True
+    normalized = str(path_value).replace("\\", "/").rstrip("/")
+    return normalized in {
+        "artifacts",
+        "artifacts/raw",
+        "metapac/artifacts/raw",
+    }
+
+
+def _should_rewrite_meta_dataset_path(path_value: str | None, repo_root: Path) -> bool:
+    if not path_value:
+        return True
+
+    path = Path(path_value)
+    if not path.is_absolute():
+        path = repo_root / path
+
+    meta_root = repo_root / "metapac" / "artifacts" / "meta_dataset"
+    try:
+        rel = path.resolve().relative_to(meta_root.resolve())
+    except Exception:
+        return False
+
+    return len(rel.parts) <= 1
+
+
+def _infer_dataset_storage_mode(dataset_cfg: Dict[str, Any]) -> str:
+    split_strategy = str(dataset_cfg.get("split_strategy", "default") or "default").lower()
+    if split_strategy != "default":
+        return "split"
+    if dataset_cfg.get("val_split_ratio") is not None or dataset_cfg.get("test_split_ratio") is not None:
+        return "split"
+    if bool(dataset_cfg.get("deduplicate_by_text", False)) or bool(dataset_cfg.get("enforce_no_text_overlap", False)):
+        return "split"
+    return "raw"
+
+
+def _copy_dataset_processing_defaults(source_cfg: Dict[str, Any], target_cfg: Dict[str, Any]) -> None:
+    for key in (
+        "split_strategy",
+        "val_split_ratio",
+        "test_split_ratio",
+        "seed",
+        "deduplicate_by_text",
+        "enforce_no_text_overlap",
+    ):
+        if target_cfg.get(key) is None and source_cfg.get(key) is not None:
+            target_cfg[key] = source_cfg[key]
+
+
+def _ensure_dataset_storage(config: Dict[str, Any], repo_root: Path) -> None:
+    dataset_root = _to_repo_relative(repo_root / "metapac" / "artifacts" / "datasets", repo_root)
+
+    baseline_dataset_cfg = config.setdefault("baseline_finetune", {}).setdefault("dataset", {})
+    baseline_source_cfg = baseline_dataset_cfg.setdefault("source", {})
+    if isinstance(baseline_source_cfg, dict):
+        baseline_storage = baseline_source_cfg.setdefault("storage", {})
+        baseline_storage.setdefault("root", dataset_root)
+        baseline_storage.setdefault("mode", _infer_dataset_storage_mode(baseline_dataset_cfg))
+
+    compression_cfg = config.setdefault("compression", {})
+
+    fine_tuning_cfg = compression_cfg.setdefault("fine_tuning", {})
+    fine_tune_data_cfg = fine_tuning_cfg.setdefault("data", {})
+    _copy_dataset_processing_defaults(baseline_dataset_cfg, fine_tune_data_cfg)
+    ft_source_cfg = fine_tune_data_cfg.setdefault("source", {})
+    if isinstance(ft_source_cfg, dict):
+        ft_storage = ft_source_cfg.setdefault("storage", {})
+        ft_storage.setdefault("root", dataset_root)
+        ft_storage.setdefault(
+            "mode",
+            baseline_source_cfg.get("storage", {}).get("mode", _infer_dataset_storage_mode(fine_tune_data_cfg))
+            if isinstance(baseline_source_cfg, dict) else _infer_dataset_storage_mode(fine_tune_data_cfg),
+        )
+
+    validation_cfg = compression_cfg.setdefault("validation", {})
+    _copy_dataset_processing_defaults(baseline_dataset_cfg, validation_cfg)
+    validation_source_cfg = validation_cfg.setdefault("source", {})
+    if isinstance(validation_source_cfg, dict):
+        validation_storage = validation_source_cfg.setdefault("storage", {})
+        validation_storage.setdefault("root", dataset_root)
+        validation_storage.setdefault(
+            "mode",
+            baseline_source_cfg.get("storage", {}).get("mode", _infer_dataset_storage_mode(validation_cfg))
+            if isinstance(baseline_source_cfg, dict) else _infer_dataset_storage_mode(validation_cfg),
+        )
+
+
+def _apply_run_artifact_paths(config: Dict[str, Any], repo_root: Path) -> None:
+    run_slug = _run_slug(config)
+
+    baseline_cfg = config.setdefault("baseline_finetune", {})
+    train_cfg = baseline_cfg.setdefault("train", {})
+    baseline_output_dir = baseline_cfg.get("output_dir")
+
+    if baseline_output_dir:
+        hook_dir = Path(baseline_output_dir) / "artifacts" / "raw"
+    else:
+        hook_dir = repo_root / "metapac" / "artifacts" / "raw" / run_slug
+
+    hook_dir_value = _to_repo_relative(hook_dir, repo_root)
+    if _is_shared_hook_dir(train_cfg.get("hook_output_dir")):
+        train_cfg["hook_output_dir"] = hook_dir_value
+
+    if _is_shared_hook_dir(config.get("input_dir")):
+        config["input_dir"] = hook_dir_value
+
+    meta_dataset_path = repo_root / "metapac" / "artifacts" / "meta_dataset" / run_slug / "meta_dataset.parquet"
+    meta_dataset_value = _to_repo_relative(meta_dataset_path, repo_root)
+
+    if _should_rewrite_meta_dataset_path(config.get("meta_dataset_path"), repo_root):
+        config["meta_dataset_path"] = meta_dataset_value
+
+    outputs_cfg = config.setdefault("outputs", {})
+    if _should_rewrite_meta_dataset_path(outputs_cfg.get("meta_dataset_path"), repo_root):
+        outputs_cfg["meta_dataset_path"] = meta_dataset_value
+
+    data_cfg = config.setdefault("data", {})
+    if _should_rewrite_meta_dataset_path(data_cfg.get("path"), repo_root):
+        data_cfg["path"] = meta_dataset_value
+
+    _ensure_dataset_storage(config, repo_root)
+
+    hook_dir.mkdir(parents=True, exist_ok=True)
+    meta_dataset_path.parent.mkdir(parents=True, exist_ok=True)
 
 
 def _resolve_repo_root() -> Path:
@@ -222,6 +311,39 @@ def _run_auto_pipeline(start_mode: str, config: Dict[str, Any]) -> int:
     # Run each stage sequentially
     repo_root = _resolve_repo_root()
 
+    def _latest_meta_checkpoint_dir() -> str | None:
+        """Find latest portable meta checkpoint directory for current run_tag/experiment_name."""
+        outputs_cfg = config.get("outputs", {})
+        runs_dir = Path(outputs_cfg.get("runs_dir", repo_root / "metapac" / "runs"))
+        ckpt_root = runs_dir / "checkpoints"
+        if not ckpt_root.exists():
+            return None
+
+        prefixes = []
+        run_tag = config.get("run_tag")
+        exp_name = config.get("experiment_name")
+        if isinstance(run_tag, str) and run_tag:
+            prefixes.append(run_tag)
+        if isinstance(exp_name, str) and exp_name:
+            prefixes.append(exp_name)
+        prefixes.append("metapac_meta")
+
+        candidates = []
+        for d in ckpt_root.iterdir():
+            if not d.is_dir():
+                continue
+            if not (d / "model_state.pt").exists() or not (d / "feature_names.json").exists():
+                continue
+            name = d.name
+            if any(name.startswith(pfx) for pfx in prefixes):
+                candidates.append(d)
+
+        if not candidates:
+            return None
+
+        latest = max(candidates, key=lambda p: p.stat().st_mtime)
+        return str(latest)
+
     for stage in stages_to_run:
         print("[pipeline] ========================================")
         print(f"[pipeline] Stage: {stage}")
@@ -230,8 +352,8 @@ def _run_auto_pipeline(start_mode: str, config: Dict[str, Any]) -> int:
         # Load default config for this stage
         stage_config = _load_default_config(stage, repo_root)
 
-        # Merge with user-provided config (user config takes precedence)
-        stage_config.update(config)
+        # Merge with user-provided config while preserving nested stage defaults.
+        stage_config = _deep_merge_dicts(stage_config, config)
         stage_config["mode"] = stage
 
         # Run the stage
@@ -240,6 +362,14 @@ def _run_auto_pipeline(start_mode: str, config: Dict[str, Any]) -> int:
         if exit_code != 0:
             print(f"[pipeline] ERROR: Stage '{stage}' failed with exit code {exit_code}")
             return exit_code
+
+        # Propagate freshly trained meta-checkpoint to downstream compression stage.
+        if stage == "train_meta":
+            latest_ckpt = _latest_meta_checkpoint_dir()
+            if latest_ckpt:
+                config.setdefault("compression", {})
+                config["compression"]["meta_checkpoint"] = latest_ckpt
+                print(f"[pipeline] Auto-selected latest meta checkpoint for compress: {latest_ckpt}")
 
         print(f"[pipeline] Stage '{stage}' completed successfully")
         print()
@@ -299,6 +429,17 @@ def run(config: Dict[str, Any]) -> int:
     repo_root = _resolve_repo_root()
     paths = PathRegistry(repo_root=repo_root)
     paths.ensure_dirs()
+    _apply_run_artifact_paths(config, repo_root)
+
+    logging_cfg = config.get("logging", {})
+    default_log_dir = None
+    if mode == "baseline_finetune":
+        default_log_dir = str(Path(config.get("baseline_finetune", {}).get("output_dir", "logs")) / "logs")
+    elif mode in {"compress", "auto"} or mode.startswith("auto:"):
+        compression_output = config.get("compression", {}).get("output_dir") or config.get("output_dir")
+        if compression_output:
+            default_log_dir = str(Path(compression_output) / "logs")
+    configure_logging(logging_cfg, default_log_dir=default_log_dir)
 
     # Set configuration defaults for consistent path handling
     config.setdefault("meta_dataset_path", str(paths.meta_dataset_path))

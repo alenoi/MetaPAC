@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import shutil
 from pathlib import Path
 from typing import Dict, Any
 
@@ -20,7 +21,7 @@ def run_feature_extraction(cfg: Dict[str, Any]) -> int:
         cfg.get("outputs", {}).get("meta_dataset_path", "metapac/artifacts/meta_dataset/meta_dataset.parquet"))
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Konfig konvertálása BuildConfig-gá
+    # Convert config into BuildConfig.
     build_cfg = BuildConfig(
         reducer=cfg.get("reducer", "mean_pool"),
         token_average=cfg.get("token_average", True),
@@ -39,7 +40,7 @@ def run_feature_extraction(cfg: Dict[str, Any]) -> int:
         imputation_strategy=cfg.get("imputation_strategy", "zero")
     )
 
-    # Feature extraction futtatása
+    # Run feature extraction.
     try:
         print(f"[debug] Using configuration:")
         print(f"  Input dir: {build_cfg.input_dir}")
@@ -47,6 +48,12 @@ def run_feature_extraction(cfg: Dict[str, Any]) -> int:
         print(f"  NaN config: min_valid_ratio={build_cfg.min_valid_ratio}, imputation={build_cfg.imputation_strategy}")
 
         path = build_meta_dataset(build_cfg.input_dir, str(out_path.parent), build_cfg)
+
+        built_path = Path(path)
+        if built_path.resolve() != out_path.resolve():
+            shutil.copy2(built_path, out_path)
+            print(f"[feature_extraction] Copied meta-dataset to configured path: {out_path}")
+
         print(f"[feature_extraction] Successfully wrote meta-dataset to: {path}")
         return 0
     except Exception as e:
@@ -76,7 +83,7 @@ def run_feature_extraction(cfg: Dict[str, Any]) -> int:
         cfg.get("outputs", {}).get("meta_dataset_path", "metapac/artifacts/meta_dataset/meta_dataset.parquet"))
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Konfig konvertálása BuildConfig-gá
+    # Convert config into BuildConfig.
     build_cfg = BuildConfig(
         reducer=cfg.get("reducer", "mean_pool"),
         token_average=cfg.get("token_average", True),
@@ -95,7 +102,7 @@ def run_feature_extraction(cfg: Dict[str, Any]) -> int:
         imputation_strategy=cfg.get("imputation_strategy", "zero")
     )
 
-    # Feature extraction futtatása
+    # Run feature extraction.
     try:
         print(f"[debug] Using configuration:")
         print(f"  Input dir: {build_cfg.input_dir}")
@@ -103,6 +110,12 @@ def run_feature_extraction(cfg: Dict[str, Any]) -> int:
         print(f"  NaN config: min_valid_ratio={build_cfg.min_valid_ratio}, imputation={build_cfg.imputation_strategy}")
 
         path = build_meta_dataset(build_cfg.input_dir, str(out_path.parent), build_cfg)
+
+        built_path = Path(path)
+        if built_path.resolve() != out_path.resolve():
+            shutil.copy2(built_path, out_path)
+            print(f"[feature_extraction] Copied meta-dataset to configured path: {out_path}")
+
         print(f"[feature_extraction] Successfully wrote meta-dataset to: {path}")
         return 0
     except Exception as e:

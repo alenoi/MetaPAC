@@ -1,0 +1,61 @@
+# Smart compression sweep spec for distilgpt2/imdb.
+# This is compression-only tuning (not baseline fine-tune HPO).
+
+parameters:
+  # Cluster-based zone assignment on predicted importances
+  compression.zone_assignment.method: ["kmeans", "gmm"]
+  compression.zone_assignment.kmeans.n_clusters: [3]
+  compression.zone_assignment.kmeans.n_init: [10, 20]
+  compression.zone_assignment.kmeans.min_high_fraction: [0.08, 0.12, 0.18]
+
+  # Wider quantization bit-range search
+  compression.quantization.bits_lower: [2, 3, 4, 6]
+  compression.quantization.bits_upper: [8, 12, 16, 32]
+
+  # Layer override ablations: disabled / default / stronger override pattern
+  compression.quantization.layer_overrides:
+    - []
+    -
+      - pattern: ".*attn.*"
+        bits: 8
+      - pattern: ".*score.*"
+        bits: 8
+    -
+      - pattern: ".*attn.*"
+        bits: 6
+      - pattern: ".*score.*"
+        bits: 8
+      - pattern: ".*wte.*"
+        bits: 10
+
+  compression.pruning.sparsity_level: [0.15, 0.2, 0.25]
+  compression.pruning.min_importance_threshold: [0.004, 0.006, 0.008]
+  compression.kd.alpha: [0.5, 0.7, 0.9]
+  compression.kd.temperature: [2.0, 3.0, 4.0]
+
+# Optional: execution order for phase-1 probing.
+parameter_order:
+  - compression.zone_assignment.method
+  - compression.zone_assignment.kmeans.n_clusters
+  - compression.zone_assignment.kmeans.n_init
+  - compression.zone_assignment.kmeans.min_high_fraction
+  - compression.pruning.sparsity_level
+  - compression.pruning.min_importance_threshold
+  - compression.quantization.bits_lower
+  - compression.quantization.bits_upper
+  - compression.quantization.layer_overrides
+  - compression.kd.alpha
+  - compression.kd.temperature
+
+# Keep top 3 values per parameter from phase-1, then combine them in phase-2.
+topk_per_parameter: 3
+max_combination_trials: 60
+
+# Stop phase-2 after this many consecutive combos with no meaningful score gain.
+min_improvement: 0.02
+patience: 12
+
+# Objective: maximize compression and minimize accuracy loss.
+weights:
+  compression: 1.0
+  accuracy_drop: 1.0

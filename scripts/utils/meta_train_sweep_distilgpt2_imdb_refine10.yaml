@@ -1,0 +1,26 @@
+# Meta-predictor training sweep (refined, 10 trials)
+# Built from previous sweep learnings:
+# - Strong positive: hidden_sizes=[256,128,64], dropout=0.1, patience=12
+# - Best region: lr around 5e-4
+# - Activation tradeoff: relu vs gelu
+
+search_mode: grid
+max_trials: 10
+seed: 42
+
+# Spearman is now computed post-hoc per trial by sweep runner
+compute_posthoc_spearman: true
+objective: posthoc.spearman
+objective_direction: max
+
+parameters:
+  training.lr: [0.00035, 0.00045, 0.00055, 0.00065, 0.0008]
+  model.activation: ["relu", "gelu"]
+
+  # fixed from best region
+  training.weight_decay: [0.00005]
+  training.huber_delta: [0.5]
+  training.early_stop_patience: [12]
+  model.hidden_sizes:
+    - [256, 128, 64]
+  model.dropout: [0.1]
