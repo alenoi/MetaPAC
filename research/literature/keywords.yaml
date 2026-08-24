@@ -1,0 +1,128 @@
+version: 1
+updated: 2026-08-24
+seed_topics:
+  - adaptive transformer compression
+  - mixed compression
+  - transformer model compression
+  - pruning
+  - structured pruning
+  - quantization
+  - mixed-precision quantization
+  - knowledge distillation
+  - meta-learning
+  - importance estimation
+  - parameter importance
+  - proxy features
+  - gradient statistics
+  - activation statistics
+  - hardware-aware compression
+  - model-efficient inference
+  - post-compression recovery
+  - adaptive action assignment
+
+discovered_topics:
+  - term: sensitivity-aware compression
+    source: literature-watch
+    first_seen: 2026-08-24
+  - term: layer-wise sensitivity
+    source: OWL, KVTuner, RAMP
+    first_seen: 2026-08-24
+  - term: channel-wise mixed precision
+    source: CMPQ
+    first_seen: 2026-08-24
+  - term: output-feature mixed precision
+    source: MixLLM
+    first_seen: 2026-08-24
+  - term: joint structural pruning and mixed-precision quantization
+    source: La et al. 2026
+    first_seen: 2026-08-24
+  - term: global quantization-error propagation
+    source: La et al. 2026
+    first_seen: 2026-08-24
+  - term: compression order
+    source: Kim et al. ICLR 2026
+    first_seen: 2026-08-24
+  - term: progressive intensity hypothesis
+    source: Kim et al. ICLR 2026
+    first_seen: 2026-08-24
+  - term: differentiable structured pruning
+    source: Huang et al. 2026
+    first_seen: 2026-08-24
+  - term: deterministic pruning masks
+    source: Huang et al. 2026
+    first_seen: 2026-08-24
+  - term: neuron-level mixed precision
+    source: Varshney et al. 2026
+    first_seen: 2026-08-24
+  - term: adaptive bit-width allocation
+    source: NMP-QAT, RAMP, MixQuant
+    first_seen: 2026-08-24
+  - term: budget-agnostic sensitivity score
+    source: MixQuant
+    first_seen: 2026-08-24
+  - term: upstream quantization dependency
+    source: MixQuant
+    first_seen: 2026-08-24
+  - term: reinforcement learning bit allocation
+    source: RAMP
+    first_seen: 2026-08-24
+  - term: hardware-aware mixed precision
+    source: APreQEL
+    first_seen: 2026-08-24
+  - term: latency-aware compression
+    source: APreQEL
+    first_seen: 2026-08-24
+  - term: memory-aware compression
+    source: APreQEL
+    first_seen: 2026-08-24
+  - term: adaptive precision from gradients
+    source: SNIP mixed precision
+    first_seen: 2026-08-24
+  - term: adaptive precision from optimizer states
+    source: SNIP mixed precision
+    first_seen: 2026-08-24
+  - term: pruning and distillation
+    source: MiniTRON, SlimQwen
+    first_seen: 2026-08-24
+  - term: progressive pruning schedule
+    source: SlimQwen
+    first_seen: 2026-08-24
+  - term: multi-axis structural pruning
+    source: MiniTRON
+    first_seen: 2026-08-24
+  - term: perturbation-based importance estimation
+    source: Bonsai, MetaPAC
+    first_seen: 2026-08-24
+  - term: gradient-guided structural pruning
+    source: LLM-Pruner
+    first_seen: 2026-08-24
+  - term: quantization-aware training
+    source: NMP-QAT
+    first_seen: 2026-08-24
+  - term: compression-aware recovery
+    source: MetaPAC, MiniTRON, LLM-Pruner
+    first_seen: 2026-08-24
+  - term: mixture-of-experts compression
+    source: SlimQwen, DDP
+    first_seen: 2026-08-24
+  - term: cross-architecture compression transfer
+    source: MetaPAC, RAMP
+    first_seen: 2026-08-24
+  - term: salience-based precision allocation
+    source: MixLLM
+    first_seen: 2026-08-24
+
+search_rules:
+  deduplicate_publications_by:
+    - doi
+    - arxiv_id
+    - normalized_title
+  expand_from_each_relevant_paper:
+    - title_terms
+    - author_keywords
+    - abstract_terms
+    - references
+    - citations
+    - related_authors
+    - related_papers
+  relevance_threshold: strong
