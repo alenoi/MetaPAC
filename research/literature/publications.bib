@@ -220,3 +220,44 @@
   url     = {https://doi.org/10.1016/j.neunet.2025.108506},
   note    = {Peer-reviewed joint pruning-and-quantization framework that explicitly optimizes sparsity, quantization error, and performance objectives.}
 }
+
+@inproceedings{kim_compression_order_2026,
+  author    = {Minjun Kim and Jaehyeon Choi and Hyunwoo Yang and Jongjin Kim and Jinho Song and U Kang},
+  title     = {Prune-then-Quantize or Quantize-then-Prune? Understanding the Impact of Compression Order in Joint Model Compression},
+  booktitle = {International Conference on Learning Representations},
+  year      = {2026},
+  url       = {https://proceedings.iclr.cc/paper_files/paper/2026/hash/578447217543a987c3a0d5b8922f3591-Abstract-Conference.html},
+  note      = {Directly relevant to MetaPAC mixed-compression sequencing; studies pruning/quantization order and proposes the Progressive Intensity Hypothesis.}
+}
+
+@article{huang_ddp_2026,
+  author  = {Weiyu Huang and Pengle Zhang and Xiaolu Zhang and Jun Zhou and Jun Zhu and Jianfei Chen},
+  title   = {Deterministic Differentiable Structured Pruning for Large Language Models},
+  journal = {arXiv preprint arXiv:2603.08065},
+  year    = {2026},
+  month   = mar,
+  doi     = {10.48550/arXiv.2603.08065},
+  url     = {https://arxiv.org/abs/2603.08065},
+  note    = {Deterministically learns structured pruning masks under an l0-style objective; relevant alternative to MetaPAC importance-to-action assignment.}
+}
+
+@article{varshney_nmpqat_2026,
+  author  = {Ayush K. Varshney and Konstantinos Vandikas and {\v{S}}ar{\=u}nas Girdzijauskas and Adam Orucu and Aneta Vulgarakis Feljan},
+  title   = {Scale When Needed: Adaptive Neuron-level Mixed Precision Quantization Aware Training},
+  journal = {arXiv preprint arXiv:2605.25054},
+  year    = {2026},
+  month   = may,
+  doi     = {10.48550/arXiv.2605.25054},
+  url     = {https://arxiv.org/abs/2605.25054},
+  note    = {Learns discrete precision independently at neuron level and increases bit width only when training signals require it; relevant fine-grained adaptive-allocation baseline.}
+}
+
+@article{tang_slimqwen_2026,
+  author  = {Shengkun Tang and Zekun Wang and Bo Zheng and Liangyu Wang and Rui Men and Siqi Zhang and Xiulong Yuan and Zihan Qiu and Zhiqiang Shen and Dayiheng Liu},
+  title   = {SlimQwen: Exploring the Pruning and Distillation in Large MoE Model Pre-training},
+  journal = {arXiv preprint arXiv:2605.08738},
+  year    = {2026},
+  month   = may,
+  url     = {https://arxiv.org/abs/2605.08738},
+  note    = {Studies structured pruning, progressive pruning schedules, and knowledge-distillation recovery on Qwen3-family MoE models; relevant to MetaPAC recovery-aware cross-architecture evaluation.}
+}
