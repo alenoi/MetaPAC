@@ -261,3 +261,54 @@
   url     = {https://arxiv.org/abs/2605.08738},
   note    = {Studies structured pruning, progressive pruning schedules, and knowledge-distillation recovery on Qwen3-family MoE models; relevant to MetaPAC recovery-aware cross-architecture evaluation.}
 }
+
+@article{yao_gamma_2026,
+  author  = {Zhangyang Yao and Haiyan Zhao and Haoyu Wang and Tianbo Huang and Lihua Zhang and Xu Han},
+  title   = {GAMMA: Global Bit Allocation for Mixed-Precision Models under Arbitrary Budgets},
+  journal = {arXiv preprint arXiv:2605.18475},
+  year    = {2026},
+  month   = may,
+  doi     = {10.48550/arXiv.2605.18475},
+  url     = {https://arxiv.org/abs/2605.18475},
+  note    = {Direct adaptive-allocation baseline: learns reusable module-wise precision preferences and converts them into exact-budget discrete assignments, explicitly addressing cross-module interactions.}
+}
+
+@article{mozaffari_compression_trinity_2026,
+  author  = {Mohammad Mozaffari},
+  title   = {Compression Trinity: Exploring Sparsity, Quantization, and Low-Rank Approximations for LLM Compression},
+  journal = {arXiv preprint arXiv:2608.24070},
+  year    = {2026},
+  month   = aug,
+  url     = {https://arxiv.org/abs/2608.24070},
+  note    = {Unified sparsity, quantization, and low-rank recovery perspective; relevant to extending MetaPAC beyond two compression actions and to recovery-aware mixed compression.}
+}
+
+@article{bahri_shiftllm_2026,
+  author  = {Ali Bahri and Hang Li and Hongliang Li and Zhitang Chen},
+  title   = {SHIFT-LLM: Distribution Shift Correction in Depth-Pruned LLMs},
+  journal = {arXiv preprint arXiv:2608.25068},
+  year    = {2026},
+  month   = aug,
+  url     = {https://arxiv.org/abs/2608.25068},
+  note    = {Training-free post-pruning recovery using linear residual adapters calibrated by closed-form regression; useful comparison for MetaPAC post-compression recovery.}
+}
+
+@article{ding_hyquant_2026,
+  author  = {Jiatong Ding and Bingxin Xing and Yu Zhang and Dian Ding and Xiaodong Yi and Xianbin Ouyang and Feihu Zhou and Kun Zhang and Zhenyu Guo and Hao Pan and Guangtao Xue and Yiming Zhang},
+  title   = {HyQuant: Hybrid-Precision Quantization for LLM Attention},
+  journal = {arXiv preprint arXiv:2608.27875},
+  year    = {2026},
+  month   = aug,
+  url     = {https://arxiv.org/abs/2608.27875},
+  note    = {Hybrid-precision attention keeps signal-selected critical token regions in high precision while quantizing the rest, providing a fine-grained importance-to-precision allocation analogue.}
+}
+
+@article{goel_sniper_2026,
+  author  = {Palaash Goel and Ayan Sengupta and Akshay Nambi and Tanmoy Chakraborty},
+  title   = {Unifying Depth and Width Pruning for LLMs via Binary Knapsack Optimization},
+  journal = {arXiv preprint arXiv:2608.12953},
+  year    = {2026},
+  month   = aug,
+  url     = {https://arxiv.org/abs/2608.12953},
+  note    = {SNIPER turns fixed importance estimates into budget-constrained depth/width pruning allocations using binary knapsack optimization; a strong allocation baseline for MetaPAC.}
+}
