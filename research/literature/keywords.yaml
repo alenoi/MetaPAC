@@ -1,5 +1,5 @@
 version: 1
-updated: 2026-08-24
+updated: 2026-08-31
 seed_topics:
   - adaptive transformer compression
   - mixed compression
@@ -111,6 +111,36 @@ discovered_topics:
   - term: salience-based precision allocation
     source: MixLLM
     first_seen: 2026-08-24
+  - term: module-wise precision preferences
+    source: GAMMA
+    first_seen: 2026-08-31
+  - term: exact-budget mixed precision
+    source: GAMMA
+    first_seen: 2026-08-31
+  - term: hidden-state reconstruction for bit allocation
+    source: GAMMA
+    first_seen: 2026-08-31
+  - term: distribution-shift correction after pruning
+    source: SHIFT-LLM
+    first_seen: 2026-08-31
+  - term: linear residual adapter recovery
+    source: SHIFT-LLM
+    first_seen: 2026-08-31
+  - term: hybrid-precision attention
+    source: HyQuant
+    first_seen: 2026-08-31
+  - term: attention-pattern importance signal
+    source: HyQuant
+    first_seen: 2026-08-31
+  - term: binary knapsack pruning allocation
+    source: SNIPER
+    first_seen: 2026-08-31
+  - term: compression budget adherence
+    source: SNIPER
+    first_seen: 2026-08-31
+  - term: sparsity quantization low-rank joint compression
+    source: Compression Trinity
+    first_seen: 2026-08-31
 
 search_rules:
   deduplicate_publications_by:
