@@ -1,5 +1,5 @@
 version: 1
-updated: 2026-08-31
+updated: 2026-09-01
 seed_topics:
   - adaptive transformer compression
   - mixed compression
@@ -141,6 +141,33 @@ discovered_topics:
   - term: sparsity quantization low-rank joint compression
     source: Compression Trinity
     first_seen: 2026-08-31
+  - term: quantization-aware healing
+    source: QAH
+    first_seen: 2026-09-01
+  - term: original-teacher post-compression distillation
+    source: QAH
+    first_seen: 2026-09-01
+  - term: global cross-layer compression budget allocation
+    source: CLEAR
+    first_seen: 2026-09-01
+  - term: water-filling compression allocation
+    source: CLEAR
+    first_seen: 2026-09-01
+  - term: activation-whitened compression
+    source: CLEAR
+    first_seen: 2026-09-01
+  - term: AutoML mixed-precision quantization
+    source: AMQ
+    first_seen: 2026-09-01
+  - term: quality-predictor bit allocation
+    source: AMQ
+    first_seen: 2026-09-01
+  - term: quantization proxy search
+    source: AMQ
+    first_seen: 2026-09-01
+  - term: search-space pruning for bit allocation
+    source: AMQ
+    first_seen: 2026-09-01
 
 search_rules:
   deduplicate_publications_by:
