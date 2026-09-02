@@ -1,5 +1,5 @@
 version: 1
-updated: 2026-09-01
+updated: 2026-09-02
 seed_topics:
   - adaptive transformer compression
   - mixed compression
@@ -168,6 +168,27 @@ discovered_topics:
   - term: search-space pruning for bit allocation
     source: AMQ
     first_seen: 2026-09-01
+  - term: LoRA-gradient importance estimation
+    source: REP-LIE
+    first_seen: 2026-09-02
+  - term: stability-aware pruning importance
+    source: REP-LIE
+    first_seen: 2026-09-02
+  - term: hierarchical mixed-precision bit allocation
+    source: Q-Strata
+    first_seen: 2026-09-02
+  - term: Pareto-frontier bit allocation
+    source: Q-Strata
+    first_seen: 2026-09-02
+  - term: model-level mixed-precision objective
+    source: Q-Strata
+    first_seen: 2026-09-02
+  - term: inter-block quantization coupling
+    source: Q-Strata
+    first_seen: 2026-09-02
+  - term: orthogonal post-pruning compensation
+    source: COEC
+    first_seen: 2026-09-02
 
 search_rules:
   deduplicate_publications_by:
