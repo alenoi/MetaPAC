@@ -154,7 +154,7 @@
   year    = {2026},
   month   = jun,
   url     = {https://arxiv.org/abs/2606.07819},
-  note    = {Direct MetaPAC competitor: jointly optimizes structural pruning and mixed-precision quantization while modeling global quantization-error propagation.}
+  note    = {Direct MetaPAC competitor: jointly optimizes structural pruning decisions and mixed-precision quantization policies within a unified search space.}
 }
 
 @article{la_architecture_quantization_2026,
@@ -348,4 +348,37 @@
   doi       = {10.18653/v1/2025.emnlp-main.1799},
   url       = {https://aclanthology.org/2025.emnlp-main.1799/},
   note      = {Direct mixed-precision allocation baseline using search-space pruning, a quantization proxy, a learned quality predictor, and iterative search under memory constraints.}
+}
+
+@article{liu_replie_2026,
+  author  = {Peng Liu and Huibing Zeng and Yiqun Zhang and Yang Yi and Jigang Wu},
+  title   = {Resource-Efficient Pruning for Transformer via Low-Rank Importance Estimation},
+  journal = {arXiv preprint arXiv:2608.24973},
+  year    = {2026},
+  month   = aug,
+  doi     = {10.48550/arXiv.2608.24973},
+  url     = {https://arxiv.org/abs/2608.24973},
+  note    = {REP-LIE estimates pruning importance from LoRA low-rank gradients and stabilizes the estimate across training before iterative pruning; a direct alternative to MetaPAC proxy-based importance estimation.}
+}
+
+@article{lee_qstrata_2026,
+  author  = {Deokjae Lee and Sihun Chu and Hyun Oh Song},
+  title   = {Q-Strata: Hierarchical Bit Allocation for Mixed-Precision Quantization of Mixture-of-Experts LLMs},
+  journal = {arXiv preprint arXiv:2608.30564},
+  year    = {2026},
+  month   = aug,
+  doi     = {10.48550/arXiv.2608.30564},
+  url     = {https://arxiv.org/abs/2608.30564},
+  note    = {Direct adaptive-allocation baseline: builds per-block Pareto frontiers and optimizes a model-level objective over block budgets, capturing inter-block coupling that additive mixed-precision proxies miss.}
+}
+
+@article{yu_coec_2026,
+  author  = {Peiqi Yu and Nam Ling and Wei Wang and Wei Jiang},
+  title   = {COEC: Calibrated Orthogonal-Equivalence Compensation for Structured Pruning of Large Language Models},
+  journal = {arXiv preprint arXiv:2608.21142},
+  year    = {2026},
+  month   = aug,
+  doi     = {10.48550/arXiv.2608.21142},
+  url     = {https://arxiv.org/abs/2608.21142},
+  note    = {Training-free structured-pruning recovery that uses calibrated alternating orthogonal rotations and singular-value rescaling; relevant as a post-pruning compensation baseline for MetaPAC recovery.}
 }
