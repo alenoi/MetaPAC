@@ -1,5 +1,5 @@
 version: 1
-updated: 2026-09-02
+updated: 2026-09-03
 seed_topics:
   - adaptive transformer compression
   - mixed compression
@@ -189,6 +189,21 @@ discovered_topics:
   - term: orthogonal post-pruning compensation
     source: COEC
     first_seen: 2026-09-02
+  - term: column-wise quantization sensitivity
+    source: MXSens
+    first_seen: 2026-09-03
+  - term: microscaling mixed precision
+    source: MXSens
+    first_seen: 2026-09-03
+  - term: hardware-aligned block-wise bit allocation
+    source: ScaleBITS
+    first_seen: 2026-09-03
+  - term: constrained global bitwidth allocation
+    source: ScaleBITS
+    first_seen: 2026-09-03
+  - term: channel reordering for quantization
+    source: ScaleBITS
+    first_seen: 2026-09-03
 
 search_rules:
   deduplicate_publications_by:
