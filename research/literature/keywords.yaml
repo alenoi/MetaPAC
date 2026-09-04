@@ -1,5 +1,5 @@
 version: 1
-updated: 2026-09-03
+updated: 2026-09-04
 seed_topics:
   - adaptive transformer compression
   - mixed compression
@@ -204,6 +204,15 @@ discovered_topics:
   - term: channel reordering for quantization
     source: ScaleBITS
     first_seen: 2026-09-03
+  - term: heterogeneous pruning-score distribution alignment
+    source: Kobayashi et al. 2026
+    first_seen: 2026-09-04
+  - term: sign-preserving importance aggregation
+    source: Kobayashi et al. 2026
+    first_seen: 2026-09-04
+  - term: adaptive feature retention structured pruning
+    source: Kobayashi et al. 2026
+    first_seen: 2026-09-04
 
 search_rules:
   deduplicate_publications_by:
