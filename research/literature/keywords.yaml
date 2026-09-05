@@ -1,5 +1,5 @@
 version: 1
-updated: 2026-09-04
+updated: 2026-09-05
 seed_topics:
   - adaptive transformer compression
   - mixed compression
@@ -213,6 +213,47 @@ discovered_topics:
   - term: adaptive feature retention structured pruning
     source: Kobayashi et al. 2026
     first_seen: 2026-09-04
+
+
+  - term: salience-determined group-wise bit allocation
+    source: SliM-LLM
+    first_seen: 2026-09-05
+  - term: salience-weighted quantizer calibration
+    source: SliM-LLM
+    first_seen: 2026-09-05
+  - term: scaled k-means mixed-precision quantization
+    source: SKIM
+    first_seen: 2026-09-05
+  - term: any-bit channel allocation
+    source: SKIM
+    first_seen: 2026-09-05
+  - term: hierarchical Hessian sensitivity
+    source: SHMQ
+    first_seen: 2026-09-05
+  - term: static hierarchical mixed precision
+    source: SHMQ
+    first_seen: 2026-09-05
+  - term: expert activation-aware precision allocation
+    source: MxMoE
+    first_seen: 2026-09-05
+  - term: mixed-precision GroupGEMM
+    source: MxMoE
+    first_seen: 2026-09-05
+  - term: fuzzy-rule quantization-error prediction
+    source: FRI-MxMoE
+    first_seen: 2026-09-05
+  - term: profiling-free mixed-precision allocation
+    source: FRI-MxMoE
+    first_seen: 2026-09-05
+  - term: global expert-level bit allocation
+    source: GEMQ
+    first_seen: 2026-09-05
+  - term: router-shift-aware quantization
+    source: GEMQ
+    first_seen: 2026-09-05
+  - term: progressive expert quantization
+    source: GEMQ
+    first_seen: 2026-09-05
 
 search_rules:
   deduplicate_publications_by:
