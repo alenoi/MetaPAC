@@ -415,3 +415,78 @@
   url     = {https://arxiv.org/abs/2607.08027},
   note    = {Strong importance-estimation baseline for MetaPAC: aligns heterogeneous pruning-score distributions, preserves score sign during aggregation, and removes outliers before structured pruning, addressing failure modes of combining multiple importance signals.}
 }
+
+@inproceedings{huang_slimllm_2025,
+  author    = {Wei Huang and Haotong Qin and Yangdong Liu and Yawei Li and Qinshuo Liu and Xianglong Liu and Luca Benini and Michele Magno and Shiming Zhang and Xiaojuan Qi},
+  title     = {SliM-LLM: Salience-Driven Mixed-Precision Quantization for Large Language Models},
+  booktitle = {Proceedings of the 42nd International Conference on Machine Learning},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {267},
+  pages     = {25672--25692},
+  year      = {2025},
+  month     = jul,
+  url       = {https://proceedings.mlr.press/v267/huang25aa.html},
+  note      = {Direct mixed-precision baseline: structured weight salience drives group-wise bit allocation and salience-weighted quantizer calibration while retaining hardware-friendly grouping.}
+}
+
+@inproceedings{bai_skim_2025,
+  author    = {Runsheng Bai and Bo Liu and Qiang Liu},
+  title     = {SKIM: Any-bit Quantization Pushing The Limits of Post-Training Quantization},
+  booktitle = {Proceedings of the 42nd International Conference on Machine Learning},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {267},
+  pages     = {2520--2534},
+  year      = {2025},
+  month     = jul,
+  url       = {https://proceedings.mlr.press/v267/bai25c.html},
+  note      = {Especially close to MetaPAC's allocator: scaled k-means and a greedy channel-wise bit-allocation procedure produce mixed-precision configurations for arbitrary target bit budgets.}
+}
+
+@inproceedings{zhang_shmq_2025,
+  author    = {Yi Zhang and Kai Zhang and Zheyang Li and Wenming Tan and Ye Ren and Jilin Hu},
+  title     = {Beyond Dynamic Quantization: An Efficient Static Hierarchical Mix-precision Framework for Near-Lossless LLM Compression},
+  booktitle = {Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing: Industry Track},
+  pages     = {2573--2587},
+  year      = {2025},
+  month     = nov,
+  doi       = {10.18653/v1/2025.emnlp-industry.175},
+  url       = {https://aclanthology.org/2025.emnlp-industry.175/},
+  note      = {SHMQ derives inter-layer and intra-layer Hessian sensitivity for hierarchical static precision allocation, providing a hardware-oriented alternative to learned MetaPAC importance and action assignment.}
+}
+
+@inproceedings{duanmu_mxmoe_2025,
+  author    = {Haojie Duanmu and Xiuhong Li and Zhihang Yuan and Size Zheng and Jiangfei Duan and Xingcheng Zhang and Dahua Lin},
+  title     = {MxMoE: Mixed-precision Quantization for MoE with Accuracy and Performance Co-Design},
+  booktitle = {Proceedings of the 42nd International Conference on Machine Learning},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {267},
+  pages     = {14793--14806},
+  year      = {2025},
+  month     = jul,
+  url       = {https://proceedings.mlr.press/v267/duanmu25a.html},
+  note      = {Jointly uses quantization sensitivity, expert activation behavior, and hardware resources to allocate MoE precision and generate mixed-precision GroupGEMM kernels; a strong hardware-aware allocation baseline.}
+}
+
+@inproceedings{qi_frimxmoe_2026,
+  author    = {Huachen Qi and Ruiyu Zhuo and Bowen Shi and Xiang Chang and Fei Chao and Changjing Shang and Qiang Shen},
+  title     = {Profiling-Free Mixed-Precision Quantization for MoE LLMs via Fuzzy Rule Interpolation},
+  booktitle = {Proceedings of the 64th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)},
+  pages     = {21484--21499},
+  year      = {2026},
+  month     = jul,
+  doi       = {10.18653/v1/2026.acl-long.982},
+  url       = {https://aclanthology.org/2026.acl-long.982/},
+  note      = {FRI-MxMoE predicts quantization error from sparse samples using bit-width, activation variance, and parameter scale; this is a direct proxy-to-quality-prediction analogue for MetaPAC.}
+}
+
+@article{deng_gemq_2026,
+  author  = {Jianing Deng and Song Wang and Dongwei Wang and Zijie Liu and Tianlong Chen and Huanrui Yang and Jingtong Hu},
+  title   = {GEMQ: Global Expert-Level Mixed-Precision Quantization for MoE LLMs},
+  journal = {arXiv preprint arXiv:2605.23078},
+  year    = {2026},
+  month   = may,
+  doi     = {10.48550/arXiv.2605.23078},
+  url     = {https://arxiv.org/abs/2605.23078},
+  note    = {Direct allocation baseline: global linear programming assigns expert-level bit-widths from model-wide quantization-error importance, then router fine-tuning compensates quantization-induced routing shifts.}
+}
+
