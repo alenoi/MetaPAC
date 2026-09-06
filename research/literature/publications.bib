@@ -490,3 +490,47 @@
   note    = {Direct allocation baseline: global linear programming assigns expert-level bit-widths from model-wide quantization-error importance, then router fine-tuning compensates quantization-induced routing shifts.}
 }
 
+@inproceedings{saxena_resq_2025,
+  author    = {Utkarsh Saxena and Sayeh Sharify and Kaushik Roy and Xin Wang},
+  title     = {ResQ: Mixed-Precision Quantization of Large Language Models with Low-Rank Residuals},
+  booktitle = {Proceedings of the 42nd International Conference on Machine Learning},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {267},
+  pages     = {53095--53114},
+  year      = {2025},
+  month     = jul,
+  url       = {https://proceedings.mlr.press/v267/saxena25b.html},
+  note      = {Direct mixed-precision baseline: PCA identifies a high-variance low-rank activation subspace retained at higher precision while the orthogonal residual is quantized more aggressively. This offers a geometrically derived alternative to MetaPAC importance-based action assignment.}
+}
+
+@inproceedings{guan_aptq_2024,
+  author    = {Ziyi Guan and Hantao Huang and Yupeng Su and Hong Huang and Ngai Wong and Hao Yu},
+  title     = {APTQ: Attention-aware Post-Training Mixed-Precision Quantization for Large Language Models},
+  booktitle = {Proceedings of the 61st ACM/IEEE Design Automation Conference},
+  year      = {2024},
+  month     = jun,
+  doi       = {10.1145/3649329.3658498},
+  url       = {https://doi.org/10.1145/3649329.3658498},
+  note      = {Attention-aware Hessian-trace sensitivity captures both layer-weight curvature and nonlinear attention-output effects for mixed-precision allocation; a strong deterministic sensitivity baseline for MetaPAC.}
+}
+
+@inproceedings{li_llmmq_2023,
+  author    = {Shiyao Li and Xuefei Ning and Ke Hong and Tengxuan Liu and Luning Wang and Xiuhong Li and Kai Zhong and Guohao Dai and Huazhong Yang and Yu Wang},
+  title     = {LLM-MQ: Mixed-precision Quantization for Efficient LLM Deployment},
+  booktitle = {Efficient Natural Language and Speech Processing Workshop at NeurIPS 2023},
+  year      = {2023},
+  url       = {https://raw.githubusercontent.com/wln20/wln20.github.io/master/files/LLM_MQ.pdf},
+  note      = {Early layer-wise mixed-precision LLM baseline that targets a specified weight-memory budget using gradient-based sensitivity. It is useful for separating MetaPAC's learned importance estimator from its downstream budget allocator.}
+}
+
+@article{rakka_mxplm_survey_2025,
+  author  = {Mariam Rakka and Marios Fournarakis and Olga Krestinskaya and Jinane Bazzi and Khaled N. Salama and Fadi Kurdahi and Ahmed M. Eltawil and Mohammed E. Fouda},
+  title   = {Mixed-Precision Quantization for Language Models: Techniques and Prospects},
+  journal = {arXiv preprint arXiv:2510.16805},
+  year    = {2025},
+  month   = oct,
+  doi     = {10.48550/arXiv.2510.16805},
+  url     = {https://arxiv.org/abs/2510.16805},
+  note    = {Survey and taxonomy of language-model mixed-precision methods across weights, activations, and KV caches, including allocation strategies, deployment trade-offs, hardware-aware design, and scalable optimization; directly useful for the planned MetaPAC systematic review.}
+}
+
