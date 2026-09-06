@@ -1,5 +1,5 @@
 version: 1
-updated: 2026-09-05
+updated: 2026-09-06
 seed_topics:
   - adaptive transformer compression
   - mixed compression
@@ -254,6 +254,29 @@ discovered_topics:
   - term: progressive expert quantization
     source: GEMQ
     first_seen: 2026-09-05
+
+
+  - term: PCA low-rank mixed-precision decomposition
+    source: ResQ
+    first_seen: 2026-09-06
+  - term: high-variance activation subspace quantization
+    source: ResQ
+    first_seen: 2026-09-06
+  - term: attention-aware Hessian sensitivity
+    source: APTQ
+    first_seen: 2026-09-06
+  - term: nonlinear attention-output quantization sensitivity
+    source: APTQ
+    first_seen: 2026-09-06
+  - term: gradient-based layer-wise mixed precision
+    source: LLM-MQ
+    first_seen: 2026-09-06
+  - term: weight-memory-budget quantization allocation
+    source: LLM-MQ
+    first_seen: 2026-09-06
+  - term: mixed-precision language-model taxonomy
+    source: Rakka et al. 2025
+    first_seen: 2026-09-06
 
 search_rules:
   deduplicate_publications_by:
