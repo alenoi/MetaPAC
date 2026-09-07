@@ -1,5 +1,5 @@
 version: 1
-updated: 2026-09-06
+updated: 2026-09-07
 seed_topics:
   - adaptive transformer compression
   - mixed compression
@@ -277,6 +277,32 @@ discovered_topics:
   - term: mixed-precision language-model taxonomy
     source: Rakka et al. 2025
     first_seen: 2026-09-06
+
+
+  - term: activation-aware salient weight channels
+    source: AWQ
+    first_seen: 2026-09-07
+  - term: equivalent scaling for quantization
+    source: AWQ
+    first_seen: 2026-09-07
+  - term: LoRA-aware quantization initialization
+    source: LoftQ
+    first_seen: 2026-09-07
+  - term: joint quantization and low-rank initialization
+    source: LoftQ
+    first_seen: 2026-09-07
+  - term: low-rank activation-error correction
+    source: Low-Rank Correction for Quantized LLMs
+    first_seen: 2026-09-07
+  - term: joint quantized-weight and low-rank correction
+    source: Low-Rank Correction for Quantized LLMs
+    first_seen: 2026-09-07
+  - term: quantization-grid-aware low-rank training
+    source: LR-QAT
+    first_seen: 2026-09-07
+  - term: memory-efficient quantization-aware training
+    source: LR-QAT
+    first_seen: 2026-09-07
 
 search_rules:
   deduplicate_publications_by:
