@@ -576,3 +576,88 @@
   note    = {Uses quantization-grid-aware low-rank auxiliary weights, integer downcasting, and checkpointing to approximate full-model QAT with substantially lower memory. Useful recovery/training baseline for MetaPAC after compression decisions are assigned.}
 }
 
+@inproceedings{kim_beaconkv_2026,
+  author    = {Janghyeon Kim and Minsoo Kim and Kyuhong Shim and Jungwook Choi},
+  title     = {BeaconKV: Key-Value Cache Compression Guided by Beacon Queries for Efficient Large Reasoning Model Inference},
+  booktitle = {Proceedings of the 43rd International Conference on Machine Learning},
+  year      = {2026},
+  month     = sep,
+  eprint    = {2609.04971},
+  archiveprefix = {arXiv},
+  url       = {https://arxiv.org/abs/2609.04971},
+  note      = {Extends adaptive importance estimation to KV-cache retention: compact beacon queries represent global query clusters and anticipate which cached pairs will be revisited. This is a strong adjacent baseline for generalizing MetaPAC from weight compression to runtime-state compression.}
+}
+
+@article{chen_active_expert_halving_2026,
+  author  = {Xing Chen and Hengshuai Yao},
+  title   = {Training-Free Halving of Activated Experts in Fine-Grained Mixture-of-Experts Models},
+  journal = {arXiv preprint arXiv:2609.04575},
+  year    = {2026},
+  month   = sep,
+  eprint  = {2609.04575},
+  archiveprefix = {arXiv},
+  url     = {https://arxiv.org/abs/2609.04575},
+  note    = {Separates the number of activated experts from the router probability mass used for normalization, enabling training-free routed-compute reduction. It is relevant to a future MetaPAC action space that jointly allocates expert activation and compression actions.}
+}
+
+@article{kapusuzoglu_mesa_2026,
+  author  = {Berkcan Kapusuzoglu and Connor Pryor and Sangwoo Cho and Supriyo Chakraborty and Shi-Xiong Zhang and Sambit Sahu and Milind Naphade},
+  title   = {When Load-Balancing Goes Too Far: Expert Pruning in Over-Dispersed Mixture-of-Experts Models},
+  journal = {arXiv preprint arXiv:2609.04453},
+  year    = {2026},
+  month   = sep,
+  eprint  = {2609.04453},
+  archiveprefix = {arXiv},
+  url     = {https://arxiv.org/abs/2609.04453},
+  note    = {Shows that router probabilities can become unreliable expert-importance proxies under over-dispersed routing and proposes domain-aware minimax score allocation. This is a direct importance-estimation and budget-allocation baseline for MetaPAC-style MoE compression.}
+}
+
+@inproceedings{liu_eora_2026,
+  author    = {Shih-Yang Liu and Maksim Khadkevich and Nai Chit Fung and Charbel Sakr and Chao-Han Huck Yang and Chien-Yi Wang and Saurav Muralidharan and Hongxu Yin and Kwang-Ting Cheng and Jan Kautz and Yu-Chiang Frank Wang and Pavlo Molchanov and Min-Hung Chen},
+  title     = {EoRA: Fine-tuning-free Compensation for Compressed LLM with Eigenspace Low-Rank Approximation},
+  booktitle = {ICLR 2026 Workshops},
+  year      = {2026},
+  eprint    = {2410.21271},
+  archiveprefix = {arXiv},
+  url       = {https://arxiv.org/abs/2410.21271},
+  note      = {Uses activation eigenspaces to prioritize low-rank reconstruction of compression errors without gradient training. It is a strong alternative to MetaPAC's distillation-based recovery after pruning, quantization, or their combination.}
+}
+
+@inproceedings{du_bitdistiller_2024,
+  author    = {DaYou Du and Yijia Zhang and Shijie Cao and Jiaqi Guo and Ting Cao and Xiaowen Chu and Ningyi Xu},
+  title     = {BitDistiller: Unleashing the Potential of Sub-4-Bit LLMs via Self-Distillation},
+  booktitle = {Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)},
+  year      = {2024},
+  month     = aug,
+  pages     = {102--116},
+  doi       = {10.18653/v1/2024.acl-long.7},
+  url       = {https://aclanthology.org/2024.acl-long.7/},
+  note      = {Combines quantization-aware training with confidence-aware self-distillation for sub-4-bit LLMs. It is a direct baseline for the knowledge-distillation and recovery component of MetaPAC under aggressive quantization.}
+}
+
+@inproceedings{jeon_l4q_2025,
+  author    = {Hyesung Jeon and Yulhwa Kim and Jae-Joon Kim},
+  title     = {L4Q: Parameter Efficient Quantization-Aware Fine-Tuning on Large Language Models},
+  booktitle = {Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)},
+  year      = {2025},
+  month     = jul,
+  pages     = {2002--2024},
+  doi       = {10.18653/v1/2025.acl-long.99},
+  url       = {https://aclanthology.org/2025.acl-long.99/},
+  note      = {Integrates LoRA and quantization-aware training in a memory-efficient workflow that produces fully quantized models. It provides a peer-reviewed recovery-aware quantization baseline complementary to MetaPAC's distillation path.}
+}
+
+@inproceedings{lee_owq_2024,
+  author    = {Changhun Lee and Jungyu Jin and Taesu Kim and Hyungjun Kim and Eunhyeok Park},
+  title     = {OWQ: Outlier-Aware Weight Quantization for Efficient Fine-Tuning and Inference of Large Language Models},
+  booktitle = {Proceedings of the AAAI Conference on Artificial Intelligence},
+  volume    = {38},
+  number    = {12},
+  year      = {2024},
+  month     = mar,
+  pages     = {13355--13364},
+  doi       = {10.1609/aaai.v38i12.29237},
+  url       = {https://ojs.aaai.org/index.php/AAAI/article/view/29237},
+  note      = {Selectively retains quantization-sensitive structured weight columns at high precision and quantizes the remainder. This is a direct deterministic sensitivity and mixed-precision allocation baseline for MetaPAC.}
+}
+
