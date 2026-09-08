@@ -1,5 +1,5 @@
 version: 1
-updated: 2026-09-07
+updated: 2026-09-08
 seed_topics:
   - adaptive transformer compression
   - mixed compression
@@ -303,6 +303,41 @@ discovered_topics:
   - term: memory-efficient quantization-aware training
     source: LR-QAT
     first_seen: 2026-09-07
+
+
+  - term: beacon-query-guided KV-cache retention
+    source: BeaconKV
+    first_seen: 2026-09-08
+  - term: thought-revisiting token prediction
+    source: BeaconKV
+    first_seen: 2026-09-08
+  - term: reference-mass calibrated expert activation
+    source: Chen and Yao 2026
+    first_seen: 2026-09-08
+  - term: training-free routed-compute reduction
+    source: Chen and Yao 2026
+    first_seen: 2026-09-08
+  - term: over-dispersed routing-aware expert pruning
+    source: MESA
+    first_seen: 2026-09-08
+  - term: domain-aware minimax expert score allocation
+    source: MESA
+    first_seen: 2026-09-08
+  - term: eigenspace low-rank compression compensation
+    source: EoRA
+    first_seen: 2026-09-08
+  - term: confidence-aware self-distillation
+    source: BitDistiller
+    first_seen: 2026-09-08
+  - term: sub-4-bit QAT distillation
+    source: BitDistiller
+    first_seen: 2026-09-08
+  - term: LoRA-integrated quantization-aware fine-tuning
+    source: L4Q
+    first_seen: 2026-09-08
+  - term: outlier-aware weak-column mixed precision
+    source: OWQ
+    first_seen: 2026-09-08
 
 search_rules:
   deduplicate_publications_by:
