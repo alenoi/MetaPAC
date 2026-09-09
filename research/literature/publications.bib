@@ -739,3 +739,200 @@
   note      = {Formulates attention-aware KV-cache distortion and allocates bits across tokens and channels by transform coding with reverse water-filling from calibration data. This is a strong deterministic allocation baseline for extending MetaPAC-style importance and budget assignment to runtime state.}
 }
 
+% Manual model-merging expansion, 2026-09-09.
+% preprint_date denotes first arXiv submission, not conference publication date.
+
+@inproceedings{wortsman_model_soups_2022,
+  author         = {Mitchell Wortsman and Gabriel Ilharco and Samir Yitzhak Gadre and Rebecca Roelofs and Raphael Gontijo-Lopes and Ari S. Morcos and Hongseok Namkoong and Ali Farhadi and Yair Carmon and Simon Kornblith and Ludwig Schmidt},
+  title          = {{Model soups: averaging weights of multiple fine-tuned models improves accuracy without increasing inference time}},
+  booktitle      = {Proceedings of the 39th International Conference on Machine Learning},
+  year           = {2022},
+  eprint         = {2203.05482},
+  archiveprefix  = {arXiv},
+  url            = {https://arxiv.org/abs/2203.05482},
+  preprint_date  = {2022-03-10},
+  keywords       = {model merging, weight-space averaging, model soups, same-task model merging},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-09},
+  note           = {Averages models fine-tuned from a common initialization to improve accuracy and robustness. Useful weight-averaging baseline for studying compression before versus after merging in a MetaPAC extension. Abstract and metadata screened; full-text assessment pending.}
+}
+
+@inproceedings{jang_model_stock_2024,
+  author         = {Dong-Hwan Jang and Sangdoo Yun and Dongyoon Han},
+  title          = {{Model Stock: All we need is just a few fine-tuned models}},
+  booktitle      = {European Conference on Computer Vision},
+  year           = {2024},
+  eprint         = {2403.19522},
+  archiveprefix  = {arXiv},
+  url            = {https://arxiv.org/abs/2403.19522},
+  preprint_date  = {2024-03-28},
+  keywords       = {layer-wise weight averaging, geometric model merging},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-09},
+  note           = {Uses weight-space geometry and layer-wise averaging to approximate a favorable center using two fine-tuned models. Relevant as a low-overhead merging baseline before adaptive compression. Abstract and metadata screened; full-text assessment pending.}
+}
+
+@inproceedings{matena_fisher_merging_2022,
+  author         = {Michael Matena and Colin Raffel},
+  title          = {{Merging Models with Fisher-Weighted Averaging}},
+  booktitle      = {Advances in Neural Information Processing Systems},
+  year           = {2022},
+  eprint         = {2111.09832},
+  archiveprefix  = {arXiv},
+  url            = {https://arxiv.org/abs/2111.09832},
+  preprint_date  = {2021-11-18},
+  keywords       = {Fisher-weighted model merging, parameter-importance-weighted averaging},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-09},
+  note           = {Uses Fisher information to weight parameter contributions when merging compatible models. Provides a deterministic importance-based aggregation reference for a MetaPAC merging extension. Abstract and metadata screened; full-text assessment pending.}
+}
+
+@inproceedings{jin_regmean_2023,
+  author         = {Xisen Jin and Xiang Ren and Daniel Preotiuc-Pietro and Pengxiang Cheng},
+  title          = {{Dataless Knowledge Fusion by Merging Weights of Language Models}},
+  booktitle      = {International Conference on Learning Representations},
+  year           = {2023},
+  eprint         = {2212.09849},
+  archiveprefix  = {arXiv},
+  url            = {https://arxiv.org/abs/2212.09849},
+  preprint_date  = {2022-12-19},
+  keywords       = {dataless knowledge fusion, RegMean, prediction-preserving weight fusion},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-09},
+  note           = {RegMean merges language-model weights to reduce prediction differences relative to source models without requiring original training datasets. Relevant to reconstruction-guided aggregation and compression-aware model fusion. Abstract and metadata screened; full-text assessment pending.}
+}
+
+@inproceedings{ilharco_task_arithmetic_2023,
+  author         = {Gabriel Ilharco and Marco Tulio Ribeiro and Mitchell Wortsman and Suchin Gururangan and Ludwig Schmidt and Hannaneh Hajishirzi and Ali Farhadi},
+  title          = {{Editing Models with Task Arithmetic}},
+  booktitle      = {International Conference on Learning Representations},
+  year           = {2023},
+  eprint         = {2212.04089},
+  archiveprefix  = {arXiv},
+  url            = {https://arxiv.org/abs/2212.04089},
+  preprint_date  = {2022-12-08},
+  keywords       = {task arithmetic, task vectors, multi-task model merging},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-09},
+  note           = {Composes task vectors obtained by subtracting pretrained weights from fine-tuned weights. Establishes a baseline and a delta representation for extending MetaPAC importance estimation and compression to multiple fine-tuned models. Abstract and metadata screened; full-text assessment pending.}
+}
+
+@inproceedings{yadav_ties_merging_2023,
+  author         = {Prateek Yadav and Derek Tam and Leshem Choshen and Colin A. Raffel and Mohit Bansal},
+  title          = {{TIES-Merging: Resolving Interference When Merging Models}},
+  booktitle      = {Advances in Neural Information Processing Systems},
+  year           = {2023},
+  eprint         = {2306.01708},
+  archiveprefix  = {arXiv},
+  url            = {https://arxiv.org/abs/2306.01708},
+  preprint_date  = {2023-06-02},
+  keywords       = {task interference, sign-conflict resolution, sparse task-vector merging},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-09},
+  note           = {Trims small updates, resolves sign conflicts, and merges sign-consistent task-vector components. Relevant to importance-based retention and interference-aware aggregation of compressed updates. Abstract and metadata screened; full-text assessment pending.}
+}
+
+@inproceedings{yu_dare_2024,
+  author         = {Le Yu and Bowen Yu and Haiyang Yu and Fei Huang and Yongbin Li},
+  title          = {{Language Models are Super Mario: Absorbing Abilities from Homologous Models as a Free Lunch}},
+  booktitle      = {Proceedings of the 41st International Conference on Machine Learning},
+  year           = {2024},
+  eprint         = {2311.03099},
+  archiveprefix  = {arXiv},
+  url            = {https://arxiv.org/abs/2311.03099},
+  preprint_date  = {2023-11-06},
+  keywords       = {delta-parameter sparsification, drop-and-rescale, DARE},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-09},
+  note           = {DARE randomly drops and rescales delta parameters before applying a merging method. Provides a random-sparsification baseline against learned importance when compressing and merging fine-tuning updates. Abstract and metadata screened; full-text assessment pending.}
+}
+
+@inproceedings{yang_adamerging_2024,
+  author         = {Enneng Yang and Zhenyi Wang and Li Shen and Shiwei Liu and Guibing Guo and Xingwei Wang and Dacheng Tao},
+  title          = {{AdaMerging: Adaptive Model Merging for Multi-Task Learning}},
+  booktitle      = {International Conference on Learning Representations},
+  year           = {2024},
+  eprint         = {2310.02575},
+  archiveprefix  = {arXiv},
+  url            = {https://arxiv.org/abs/2310.02575},
+  preprint_date  = {2023-10-04},
+  keywords       = {adaptive model merging, layer-wise merging coefficients, entropy-minimization model merging},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-09},
+  note           = {Learns task-wise or layer-wise merging coefficients via entropy minimization on unlabeled test samples. Relevant as an adaptive allocation analogue, with its test-time data and optimization requirements distinguished from data-free merging. Abstract and metadata screened; full-text assessment pending.}
+}
+
+@article{deep_della_merging_2024,
+  author         = {Pala Tej Deep and Rishabh Bhardwaj and Soujanya Poria},
+  title          = {{DELLA-Merging: Reducing Interference in Model Merging through Magnitude-Based Sampling}},
+  journal        = {arXiv preprint arXiv:2406.11617},
+  year           = {2024},
+  eprint         = {2406.11617},
+  archiveprefix  = {arXiv},
+  url            = {https://arxiv.org/abs/2406.11617},
+  preprint_date  = {2024-06-17},
+  keywords       = {magnitude-based delta sampling, MAGPRUNE},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-09},
+  note           = {Uses magnitude-ranked dropout probabilities and rescaling to sparsify updates before merging. Relevant importance-proxy baseline for a MetaPAC delta-compression and merging workflow. Abstract and metadata screened; full-text assessment pending.}
+}
+
+@inproceedings{davari_model_breadcrumbs_2024,
+  author         = {MohammadReza Davari and Eugene Belilovsky},
+  title          = {{Model Breadcrumbs: Scaling Multi-Task Model Merging with Sparse Masks}},
+  booktitle      = {European Conference on Computer Vision},
+  year           = {2024},
+  eprint         = {2312.06795},
+  archiveprefix  = {arXiv},
+  url            = {https://arxiv.org/abs/2312.06795},
+  preprint_date  = {2023-12-11},
+  keywords       = {outlier-filtered task vectors, sparse-mask model merging},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-09},
+  note           = {Removes negligible and outlier task-vector updates before aggregation. Relevant to selective retention, sparse masks, and the distinction between update magnitude and downstream merging utility. Abstract and metadata screened; full-text assessment pending.}
+}
+
+@inproceedings{gargiulo_task_singular_vectors_2025,
+  author         = {Antonio Andrea Gargiulo and Donato Crisostomi and Maria Sofia Bucarelli and Simone Scardapane and Fabrizio Silvestri and Emanuele Rodol{\`a}},
+  title          = {{Task Singular Vectors: Reducing Task Interference in Model Merging}},
+  booktitle      = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  year           = {2025},
+  eprint         = {2412.00081},
+  archiveprefix  = {arXiv},
+  url            = {https://arxiv.org/abs/2412.00081},
+  preprint_date  = {2024-11-26},
+  keywords       = {task singular vectors, low-rank task-vector compression, subspace interference},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-09},
+  note           = {Uses layer-wise SVD to compress task updates and reduce interference during merging. Closely related to extending MetaPAC with low-rank delta representations and compression-aware aggregation. Abstract and metadata screened; full-text assessment pending.}
+}
+
+@article{yang_impart_2025,
+  author         = {Yan Yang and Yixia Li and Hongru Wang and Xuetao Wei and Jianqiao Yu and Yun Chen and Guanhua Chen},
+  title          = {{ImPart: Importance-Aware Delta-Sparsification for Improved Model Compression and Merging in LLMs}},
+  journal        = {arXiv preprint arXiv:2504.13237},
+  year           = {2025},
+  eprint         = {2504.13237},
+  archiveprefix  = {arXiv},
+  url            = {https://arxiv.org/abs/2504.13237},
+  preprint_date  = {2025-04-17},
+  keywords       = {importance-aware delta sparsification, delta quantization, singular-vector sparsity allocation},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-09},
+  note           = {Assigns different sparsification ratios to singular vectors according to importance and combines with delta quantization and model merging. Especially close to MetaPAC's importance-to-compression allocation, while operating on fine-tuning deltas. Abstract and metadata screened; full-text assessment pending.}
+}
+
+@inproceedings{lee_adarank_2026,
+  author         = {Chanhyuk Lee and Jiho Choi and Chanryeol Lee and Donggyun Kim and Seunghoon Hong},
+  title          = {{AdaRank: Adaptive Rank Pruning for Enhanced Model Merging}},
+  booktitle      = {International Conference on Learning Representations},
+  year           = {2026},
+  eprint         = {2503.22178},
+  archiveprefix  = {arXiv},
+  url            = {https://arxiv.org/abs/2503.22178},
+  preprint_date  = {2025-03-28},
+  keywords       = {adaptive rank pruning for model merging, singular-direction selection},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-09},
+  note           = {Learns which singular components of task vectors to prune using test-time entropy minimization. Relevant adaptive low-rank allocation baseline for reducing merging interference; requires explicit accounting for adaptation data and compute. Abstract and metadata screened; full-text assessment pending.}
+}
