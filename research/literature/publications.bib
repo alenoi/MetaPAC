@@ -661,3 +661,81 @@
   note      = {Selectively retains quantization-sensitive structured weight columns at high precision and quantizes the remainder. This is a direct deterministic sensitivity and mixed-precision allocation baseline for MetaPAC.}
 }
 
+@article{wang_metakv_2026,
+  author    = {Michael Wang and Keith Li and Roozbeh Bostandoost},
+  title     = {MetaKV: Adaptive KV Cache Compression for Constrained LLM Inference},
+  journal   = {arXiv preprint arXiv:2609.07966},
+  year      = {2026},
+  month     = sep,
+  date      = {2026-09-07},
+  eprint    = {2609.07966},
+  archiveprefix = {arXiv},
+  url       = {https://arxiv.org/abs/2609.07966},
+  note      = {Selects a KV-cache compression configuration per prompt using lightweight predictors of latency, peak memory, and answer correctness under user constraints. Its predictor-to-budgeted-allocator structure is a strong adjacent baseline for MetaPAC, although its action space targets runtime KV state rather than model weights.}
+}
+
+@article{whalen_kbbq_2026,
+  author    = {Lexington Whalen and Yuki Ito and Ryo Sakamoto},
+  title     = {KBBQ: A Predictive Noise Law and the Limits of Spectrum Flattening in FP4 Quantization},
+  journal   = {arXiv preprint arXiv:2609.08135},
+  year      = {2026},
+  month     = sep,
+  date      = {2026-09-08},
+  eprint    = {2609.08135},
+  archiveprefix = {arXiv},
+  url       = {https://arxiv.org/abs/2609.08135},
+  note      = {Derives a second-order FP4 quantization-noise model summarized by a participation factor and a closed-form SNR law, then uses it to characterize spectrum-flattening limits. This supplies an analytic quantization-error proxy that could complement or benchmark MetaPAC's learned importance estimator.}
+}
+
+@article{duersch_gauge_correct_2026,
+  author    = {Jed A. Duersch and Na{\"i}m Es-Sebbani and Nathana{\"e}l Haas and Zied Bouraoui},
+  title     = {Dense Structural Compression of Transformers via Gauge-Correct Channel Removal},
+  journal   = {arXiv preprint arXiv:2609.07264},
+  year      = {2026},
+  month     = sep,
+  date      = {2026-09-07},
+  eprint    = {2609.07264},
+  archiveprefix = {arXiv},
+  url       = {https://arxiv.org/abs/2609.07264},
+  note      = {Learns removable transformer channels with gauge-correct group penalties and per-channel calibration based on inference utility relative to compute. It is a relevant learned structured-importance and physical-compaction baseline, with evidence currently centered on smaller transformer and statistical workloads.}
+}
+
+@inproceedings{zhao_all_for_one_bit_2026,
+  author    = {Zhixiong Zhao and Zukang Xu and Guangyu Sun and Lifeng Liu and Dawei Yang},
+  title     = {All for 1-Bit: Towards Genuine 1-Bit Post-Training Quantization for LLMs},
+  booktitle = {Proceedings of the 2026 Conference on Empirical Methods in Natural Language Processing},
+  year      = {2026},
+  month     = sep,
+  date      = {2026-09-05},
+  eprint    = {2609.06161},
+  archiveprefix = {arXiv},
+  url       = {https://arxiv.org/abs/2609.06161},
+  note      = {Targets strict 1.0-bit-per-weight post-training quantization through Hessian-aware reconstruction and hierarchical Shapley sensitivity for structural capacity allocation. The sensitivity-to-allocation path is a strong aggressive-quantization baseline for MetaPAC.}
+}
+
+@inproceedings{hyeon_cost_normalized_moe_2026,
+  author    = {Sieun Hyeon and Jaeyoung Do},
+  title     = {Beyond Retraining-Free MoE Compression: A Cost-Normalized Study of Post-Compression Adjustment},
+  booktitle = {Proceedings of the 2026 Conference on Empirical Methods in Natural Language Processing},
+  year      = {2026},
+  month     = sep,
+  date      = {2026-09-05},
+  eprint    = {2609.06076},
+  archiveprefix = {arXiv},
+  url       = {https://arxiv.org/abs/2609.06076},
+  note      = {Compares language-model fine-tuning and teacher knowledge distillation after MoE pruning or merging under matched small-data and compute budgets. It provides a controlled recovery baseline for evaluating MetaPAC's post-compression distillation component on MoE architectures.}
+}
+
+@article{laus_transform_coding_kv_2026,
+  author    = {Hannah Laus and Claudio Mayrink Verdun and Hao Wang and Flavio du Pin Calmon and Felix Krahmer},
+  title     = {KV Cache Compression Through the Lens of Transform Coding},
+  journal   = {arXiv preprint arXiv:2608.14191},
+  year      = {2026},
+  month     = aug,
+  date      = {2026-08-14},
+  eprint    = {2608.14191},
+  archiveprefix = {arXiv},
+  url       = {https://arxiv.org/abs/2608.14191},
+  note      = {Formulates attention-aware KV-cache distortion and allocates bits across tokens and channels by transform coding with reverse water-filling from calibration data. This is a strong deterministic allocation baseline for extending MetaPAC-style importance and budget assignment to runtime state.}
+}
+
