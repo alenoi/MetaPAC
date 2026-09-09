@@ -377,6 +377,113 @@ discovered_topics:
     source: Laus et al. 2026
     first_seen: 2026-09-09
 
+  # Derived search terms, not claimed to be author-supplied keywords.
+  - term: model merging
+    source: wortsman_model_soups_2022
+    first_seen: 2026-09-09
+  - term: weight-space averaging
+    source: wortsman_model_soups_2022
+    first_seen: 2026-09-09
+  - term: model soups
+    source: wortsman_model_soups_2022
+    first_seen: 2026-09-09
+  - term: same-task model merging
+    source: wortsman_model_soups_2022
+    first_seen: 2026-09-09
+  - term: layer-wise weight averaging
+    source: jang_model_stock_2024
+    first_seen: 2026-09-09
+  - term: geometric model merging
+    source: jang_model_stock_2024
+    first_seen: 2026-09-09
+  - term: Fisher-weighted model merging
+    source: matena_fisher_merging_2022
+    first_seen: 2026-09-09
+  - term: parameter-importance-weighted averaging
+    source: matena_fisher_merging_2022
+    first_seen: 2026-09-09
+  - term: dataless knowledge fusion
+    source: jin_regmean_2023
+    first_seen: 2026-09-09
+  - term: RegMean
+    source: jin_regmean_2023
+    first_seen: 2026-09-09
+  - term: prediction-preserving weight fusion
+    source: jin_regmean_2023
+    first_seen: 2026-09-09
+  - term: task arithmetic
+    source: ilharco_task_arithmetic_2023
+    first_seen: 2026-09-09
+  - term: task vectors
+    source: ilharco_task_arithmetic_2023
+    first_seen: 2026-09-09
+  - term: multi-task model merging
+    source: ilharco_task_arithmetic_2023
+    first_seen: 2026-09-09
+  - term: task interference
+    source: yadav_ties_merging_2023
+    first_seen: 2026-09-09
+  - term: sign-conflict resolution
+    source: yadav_ties_merging_2023
+    first_seen: 2026-09-09
+  - term: sparse task-vector merging
+    source: yadav_ties_merging_2023
+    first_seen: 2026-09-09
+  - term: delta-parameter sparsification
+    source: yu_dare_2024
+    first_seen: 2026-09-09
+  - term: drop-and-rescale
+    source: yu_dare_2024
+    first_seen: 2026-09-09
+  - term: DARE
+    source: yu_dare_2024
+    first_seen: 2026-09-09
+  - term: adaptive model merging
+    source: yang_adamerging_2024
+    first_seen: 2026-09-09
+  - term: layer-wise merging coefficients
+    source: yang_adamerging_2024
+    first_seen: 2026-09-09
+  - term: entropy-minimization model merging
+    source: yang_adamerging_2024
+    first_seen: 2026-09-09
+  - term: magnitude-based delta sampling
+    source: deep_della_merging_2024
+    first_seen: 2026-09-09
+  - term: MAGPRUNE
+    source: deep_della_merging_2024
+    first_seen: 2026-09-09
+  - term: outlier-filtered task vectors
+    source: davari_model_breadcrumbs_2024
+    first_seen: 2026-09-09
+  - term: sparse-mask model merging
+    source: davari_model_breadcrumbs_2024
+    first_seen: 2026-09-09
+  - term: task singular vectors
+    source: gargiulo_task_singular_vectors_2025
+    first_seen: 2026-09-09
+  - term: low-rank task-vector compression
+    source: gargiulo_task_singular_vectors_2025
+    first_seen: 2026-09-09
+  - term: subspace interference
+    source: gargiulo_task_singular_vectors_2025
+    first_seen: 2026-09-09
+  - term: importance-aware delta sparsification
+    source: yang_impart_2025
+    first_seen: 2026-09-09
+  - term: delta quantization
+    source: yang_impart_2025
+    first_seen: 2026-09-09
+  - term: singular-vector sparsity allocation
+    source: yang_impart_2025
+    first_seen: 2026-09-09
+  - term: adaptive rank pruning for model merging
+    source: lee_adarank_2026
+    first_seen: 2026-09-09
+  - term: singular-direction selection
+    source: lee_adarank_2026
+    first_seen: 2026-09-09
+
 search_rules:
   deduplicate_publications_by:
     - doi
