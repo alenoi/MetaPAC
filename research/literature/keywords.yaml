@@ -1,5 +1,5 @@
 version: 1
-updated: 2026-09-08
+updated: 2026-09-09
 seed_topics:
   - adaptive transformer compression
   - mixed compression
@@ -338,6 +338,44 @@ discovered_topics:
   - term: outlier-aware weak-column mixed precision
     source: OWQ
     first_seen: 2026-09-08
+
+
+  - term: prompt-adaptive KV-cache configuration
+    source: MetaKV
+    first_seen: 2026-09-09
+  - term: latency-memory constrained compression selection
+    source: MetaKV
+    first_seen: 2026-09-09
+  - term: predictive quantization-noise law
+    source: KBBQ
+    first_seen: 2026-09-09
+  - term: participation-factor FP4 quantization
+    source: KBBQ
+    first_seen: 2026-09-09
+  - term: gauge-correct channel removal
+    source: Duersch et al. 2026
+    first_seen: 2026-09-09
+  - term: inference-utility-per-compute channel pruning
+    source: Duersch et al. 2026
+    first_seen: 2026-09-09
+  - term: hierarchical Shapley capacity allocation
+    source: All for 1-Bit
+    first_seen: 2026-09-09
+  - term: genuine one-bit post-training quantization
+    source: All for 1-Bit
+    first_seen: 2026-09-09
+  - term: cost-normalized post-compression adjustment
+    source: Hyeon and Do 2026
+    first_seen: 2026-09-09
+  - term: MoE compression recovery
+    source: Hyeon and Do 2026
+    first_seen: 2026-09-09
+  - term: attention-aware KV-cache distortion
+    source: Laus et al. 2026
+    first_seen: 2026-09-09
+  - term: reverse-water-filling KV bit allocation
+    source: Laus et al. 2026
+    first_seen: 2026-09-09
 
 search_rules:
   deduplicate_publications_by:
