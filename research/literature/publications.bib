@@ -936,3 +936,48 @@
   urldate        = {2026-09-09},
   note           = {Learns which singular components of task vectors to prune using test-time entropy minimization. Relevant adaptive low-rank allocation baseline for reducing merging interference; requires explicit accounting for adaptation data and compute. Abstract and metadata screened; full-text assessment pending.}
 }
+
+@inproceedings{ping_delta_come_2024,
+  author = {Bowen Ping and Shuo Wang and Hanqing Wang and Xu Han and Yuzhuang Xu and Yukun Yan and Yun Chen and Baobao Chang and Zhiyuan Liu and Maosong Sun},
+  title = {Delta-CoMe: Training-Free Delta-Compression with Mixed-Precision for Large Language Models},
+  booktitle = {Advances in Neural Information Processing Systems},
+  year = {2024},
+  eprint = {2406.08903},
+  archiveprefix = {arXiv},
+  doi = {10.48550/arXiv.2406.08903},
+  url = {https://arxiv.org/abs/2406.08903},
+  preprint_date = {2024-06-13},
+  evidence = {abstract_and_metadata},
+  urldate = {2026-09-10},
+  note = {Assigns higher precision to singular vectors associated with larger singular values in fine-tuning deltas; a strong deterministic importance-to-bit-allocation baseline for a delta-space extension of MetaPAC. Relevance is preliminary, based on abstract and metadata; full-text assessment pending.}
+}
+
+@inproceedings{liu_bitdelta_2024,
+  author = {James Liu and Guangxuan Xiao and Kai Li and Jason D. Lee and Song Han and Tri Dao and Tianle Cai},
+  title = {BitDelta: Your Fine-Tune May Only Be Worth One Bit},
+  booktitle = {Advances in Neural Information Processing Systems},
+  year = {2024},
+  eprint = {2402.10193},
+  archiveprefix = {arXiv},
+  doi = {10.48550/arXiv.2402.10193},
+  url = {https://arxiv.org/abs/2402.10193},
+  preprint_date = {2024-02-15},
+  evidence = {abstract_and_metadata},
+  urldate = {2026-09-10},
+  note = {Quantizes fine-tuning deltas to one bit while sharing a high-precision base model, providing a simple low-bit delta-compression baseline and multi-tenant deployment comparison; it is not itself a model-merging algorithm. Relevance is preliminary, based on abstract and metadata; full-text assessment pending.}
+}
+
+@article{xiong_prinmix_2025,
+  author = {Boya Xiong and Shuo Wang and Weifeng Ge and Guanhua Chen and Yun Chen},
+  title = {Enhancing Delta Compression in LLMs via SVD-based Quantization Error Minimization},
+  journal = {arXiv preprint arXiv:2506.11087},
+  year = {2025},
+  eprint = {2506.11087},
+  archiveprefix = {arXiv},
+  doi = {10.48550/arXiv.2506.11087},
+  url = {https://arxiv.org/abs/2506.11087},
+  preprint_date = {2025-06-05},
+  evidence = {abstract_and_metadata},
+  urldate = {2026-09-10},
+  note = {PrinMix derives SVD-space quantization error, uses 0/1 integer linear programming for bit-budget allocation, and corrects sequential quantization reconstruction targets; a close allocator and error-estimation baseline for MetaPAC in delta space. Earlier versions were titled ADAMIX: Adaptive Mixed-Precision Delta-Compression with Quantization Error Optimization for Large Language Models; latest revision checked is 2026-02-15 (v3), not a separate publication. Relevance is preliminary, based on abstract and metadata; full-text assessment pending.}
+}
