@@ -1,5 +1,5 @@
 version: 1
-updated: 2026-09-09
+updated: 2026-09-10
 seed_topics:
   - adaptive transformer compression
   - mixed compression
@@ -483,6 +483,28 @@ discovered_topics:
   - term: singular-direction selection
     source: lee_adarank_2026
     first_seen: 2026-09-09
+
+  - term: mixed-precision delta compression
+    source: ping_delta_come_2024
+    first_seen: 2026-09-10
+  - term: singular-value-guided bit allocation
+    source: ping_delta_come_2024
+    first_seen: 2026-09-10
+  - term: one-bit fine-tuning deltas
+    source: liu_bitdelta_2024
+    first_seen: 2026-09-10
+  - term: shared-backbone multi-tenant serving
+    source: liu_bitdelta_2024
+    first_seen: 2026-09-10
+  - term: SVD quantization-error minimization
+    source: xiong_prinmix_2025
+    first_seen: 2026-09-10
+  - term: integer-linear-programming delta bit allocation
+    source: xiong_prinmix_2025
+    first_seen: 2026-09-10
+  - term: sequential quantization reconstruction target correction
+    source: xiong_prinmix_2025
+    first_seen: 2026-09-10
 
 search_rules:
   deduplicate_publications_by:
