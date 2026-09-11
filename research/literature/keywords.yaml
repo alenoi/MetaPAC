@@ -1,5 +1,5 @@
 version: 1
-updated: 2026-09-10
+updated: 2026-09-11
 seed_topics:
   - adaptive transformer compression
   - mixed compression
@@ -505,6 +505,70 @@ discovered_topics:
   - term: sequential quantization reconstruction target correction
     source: xiong_prinmix_2025
     first_seen: 2026-09-10
+
+  - term: calibration-free spectral neuron importance
+    source: behera_lila_2026
+    first_seen: 2026-09-11
+  - term: KS-distance structured pruning score
+    source: behera_lila_2026
+    first_seen: 2026-09-11
+  - term: dynamic spectral sparsity-budget allocation
+    source: behera_lila_2026
+    first_seen: 2026-09-11
+  - term: predictive-distribution divergence under quantization
+    source: qamar_divergence_quantized_2026
+    first_seen: 2026-09-11
+  - term: quantization fidelity loss
+    source: qamar_divergence_quantized_2026
+    first_seen: 2026-09-11
+  - term: compression-aware test-time adaptation
+    source: corti_compression_tta_2026
+    first_seen: 2026-09-11
+  - term: adaptation-subspace compatibility
+    source: corti_compression_tta_2026
+    first_seen: 2026-09-11
+  - term: cross-layer Kronecker-Fisher sensitivity
+    source: yusupov_kronecker_fisher_2026
+    first_seen: 2026-09-11
+  - term: recovery-correlated compression sensitivity
+    source: yusupov_kronecker_fisher_2026
+    first_seen: 2026-09-11
+  - term: fractional-precision LLM acceleration
+    source: gao_flexposit_2026
+    first_seen: 2026-09-11
+  - term: Posit-based mixed-precision quantization
+    source: gao_flexposit_2026
+    first_seen: 2026-09-11
+  - term: learnable task-vector compression
+    source: gao_auto_flexswitch_2026
+    first_seen: 2026-09-11
+  - term: adaptive task-vector sparsification and bit-width selection
+    source: gao_auto_flexswitch_2026
+    first_seen: 2026-09-11
+  - term: dynamic task-vector retrieval
+    source: gao_auto_flexswitch_2026
+    first_seen: 2026-09-11
+  - term: unsupervised expert alignment
+    source: zhang_expert_merging_2025
+    first_seen: 2026-09-11
+  - term: importance-guided layer chunking
+    source: zhang_expert_merging_2025
+    first_seen: 2026-09-11
+  - term: task-vector geometry model merging
+    source: mcclendon_task_vector_geometry_2026
+    first_seen: 2026-09-11
+  - term: conflict-driven preference-optimized merging
+    source: zheng_comerge_2026
+    first_seen: 2026-09-11
+  - term: conflict-aware sparsification for model merging
+    source: liu_cabs_plus_2026
+    first_seen: 2026-09-11
+  - term: gradient-free adaptive merging-weight allocation
+    source: liu_cabs_plus_2026
+    first_seen: 2026-09-11
+  - term: relative synergy score mergeability
+    source: liu_cabs_plus_2026
+    first_seen: 2026-09-11
 
 search_rules:
   deduplicate_publications_by:
