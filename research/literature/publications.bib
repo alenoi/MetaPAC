@@ -981,3 +981,153 @@
   urldate = {2026-09-10},
   note = {PrinMix derives SVD-space quantization error, uses 0/1 integer linear programming for bit-budget allocation, and corrects sequential quantization reconstruction targets; a close allocator and error-estimation baseline for MetaPAC in delta space. Earlier versions were titled ADAMIX: Adaptive Mixed-Precision Delta-Compression with Quantization Error Optimization for Large Language Models; latest revision checked is 2026-02-15 (v3), not a separate publication. Relevance is preliminary, based on abstract and metadata; full-text assessment pending.}
 }
+
+@article{behera_lila_2026,
+  author         = {Sankar Behera and Dhruv Singh and Anshika Agnihotri and Raj Kumar Choudhary and Satyadev Ahlawat and Yamuna Prasad},
+  title          = {LILA: Calibration-Free Structured Pruning of Large Language Models via Latent Spectral Geometry},
+  journal      = {arXiv preprint arXiv:2609.11163},
+  year           = {2026},
+  eprint         = {2609.11163},
+  archiveprefix  = {arXiv},
+  doi            = {10.48550/arXiv.2609.11163},
+  url            = {https://arxiv.org/abs/2609.11163},
+  preprint_date  = {2026-09-10},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-11},
+  note           = {Uses the Kolmogorov--Smirnov distance between full and neuron-ablated singular-value distributions as a calibration-free neuron-importance score and extends it to dynamic sparsity-budget allocation. A direct structured-pruning importance and allocation baseline for MetaPAC. Relevance assessment is based on abstract and indexed metadata; full-text assessment pending.}
+}
+
+@article{qamar_divergence_quantized_2026,
+  author         = {Shahzeb Qamar and Lorenz Sparrenberg and Christian Bauckhage and Baha Rababah and Carson Leung and Murat Kantarcioglu and Cuneyt Gurcan Akcora and Rafet Sifa},
+  title          = {Accuracy is Not Enough: A Divergence-Based Approach to Evaluate Fidelity Loss in Quantized LLMs},
+  journal      = {arXiv preprint arXiv:2609.07664},
+  year           = {2026},
+  eprint         = {2609.07664},
+  archiveprefix  = {arXiv},
+  doi            = {10.48550/arXiv.2609.07664},
+  url            = {https://arxiv.org/abs/2609.07664},
+  preprint_date  = {2026-09-07},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-11},
+  note           = {Evaluates quantization-induced information loss through divergence between full-vocabulary predictive distributions rather than top-1 accuracy alone. It supplies complementary fidelity metrics for MetaPAC compression evaluation; current version checked is v2 from 2026-09-09. Relevance assessment is based on abstract and indexed metadata; full-text assessment pending.}
+}
+
+@article{corti_compression_tta_2026,
+  author         = {Francesco Corti and Dong Wang and Young D. Kwon and Cecilia Mascolo and Olga Saukh},
+  title          = {On the Interaction Between Model Compression and Test-Time Adaptation},
+  journal      = {arXiv preprint arXiv:2609.03604},
+  year           = {2026},
+  eprint         = {2609.03604},
+  archiveprefix  = {arXiv},
+  doi            = {10.48550/arXiv.2609.03604},
+  url            = {https://arxiv.org/abs/2609.03604},
+  preprint_date  = {2026-09-03},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-11},
+  note           = {Studies how structured compression changes test-time adaptability through representational expressivity and adaptation-subspace compatibility. Relevant to fine-tuning-aware MetaPAC objectives and recovery-preserving compression, although its experiments use ResNet-18 and ViT-Base rather than LLMs. Relevance assessment is based on abstract and indexed metadata; full-text assessment pending.}
+}
+
+@article{yusupov_kronecker_fisher_2026,
+  author         = {Viacheslav Yusupov and Daria Cherniuk and Evgeny Frolov},
+  title          = {Scalable Kronecker-Fisher Approximation: Efficient Hessian Analysis for Billion-Parameter Language Models Compression},
+  journal      = {arXiv preprint arXiv:2609.02451},
+  year           = {2026},
+  eprint         = {2609.02451},
+  archiveprefix  = {arXiv},
+  doi            = {10.48550/arXiv.2609.02451},
+  url            = {https://arxiv.org/abs/2609.02451},
+  preprint_date  = {2026-09-02},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-11},
+  note           = {Provides a scalable cross-layer Fisher/Hessian approximation whose scores correlate with degradation and recovery under quantization and sparsification. A strong deterministic importance-estimation baseline for mixed precision, layer-wise sparsity, and adaptive low-rank allocation. Relevance assessment is based on abstract and indexed metadata; full-text assessment pending.}
+}
+
+@inproceedings{gao_flexposit_2026,
+  author         = {Yimin Gao and Liangtao Dai and Jun Yin and Xinfei Guo and Mircea Stan},
+  title          = {FlexPosit: Tunable Fractional Precision for LLM Inference Accelerators},
+  booktitle      = {59th IEEE/ACM International Symposium on Microarchitecture (MICRO 2026)},
+  year           = {2026},
+  eprint         = {2609.04724},
+  archiveprefix  = {arXiv},
+  doi            = {10.48550/arXiv.2609.04724},
+  url            = {https://arxiv.org/abs/2609.04724},
+  preprint_date  = {2026-09-04},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-11},
+  note           = {Co-designs Posit quantization with a precision-tunable bit-serial accelerator and uses hardware-aligned, sensitivity-guided mixed-precision allocation. A hardware-realizability baseline for translating MetaPAC allocations into measurable throughput and energy gains. Relevance assessment is based on abstract and indexed metadata; full-text assessment pending.}
+}
+
+@article{gao_auto_flexswitch_2026,
+  author         = {Junqi Gao and Dazhi Zhang and Zhichang Guo and Biqing Qi and Yi Ran and Wangmeng Zuo},
+  title          = {Auto-FlexSwitch: Efficient Dynamic Model Merging via Learnable Task Vector Compression},
+  journal      = {arXiv preprint arXiv:2604.28109},
+  year           = {2026},
+  eprint         = {2604.28109},
+  archiveprefix  = {arXiv},
+  doi            = {10.48550/arXiv.2604.28109},
+  url            = {https://arxiv.org/abs/2604.28109},
+  preprint_date  = {2026-04-30},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-11},
+  note           = {Jointly learns task-vector sparsification and bit-width selection by model unit and combines compressed task vectors dynamically through feature-similarity retrieval. This is a close extension baseline connecting MetaPAC-style adaptive mixed compression with model merging. Relevance assessment is based on abstract and indexed metadata; full-text assessment pending.}
+}
+
+@article{zhang_expert_merging_2025,
+  author         = {Dengming Zhang and Xiaowen Ma and Zhenliang Ni and Zhenkai Wu and Han Shu and Xin Jiang and Xinghao Chen},
+  title          = {Expert Merging: Model Merging with Unsupervised Expert Alignment and Importance-Guided Layer Chunking},
+  journal      = {arXiv preprint arXiv:2509.25712},
+  year           = {2025},
+  eprint         = {2509.25712},
+  archiveprefix  = {arXiv},
+  doi            = {10.48550/arXiv.2509.25712},
+  url            = {https://arxiv.org/abs/2509.25712},
+  preprint_date  = {2025-09-30},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-11},
+  note           = {Learns layer-wise merging coefficients from unlabeled calibration data and allocates finer coefficient chunks to more important layers. Relevant to importance-guided granularity and adaptive action allocation in a multi-expert merging setting. Relevance assessment is based on abstract and indexed metadata; full-text assessment pending.}
+}
+
+@article{mcclendon_task_vector_geometry_2026,
+  author         = {S. Aaron McClendon},
+  title          = {When Model Merging Rivals Joint Multi-Task Reinforcement Learning: A Task-Vector Geometry Analysis},
+  journal      = {arXiv preprint arXiv:2607.16062},
+  year           = {2026},
+  eprint         = {2607.16062},
+  archiveprefix  = {arXiv},
+  doi            = {10.48550/arXiv.2607.16062},
+  url            = {https://arxiv.org/abs/2607.16062},
+  preprint_date  = {2026-07-17},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-11},
+  note           = {Relates task-vector direction, support overlap, and the behavior of TIES/RAM-style merging, finding a setting where sign- and support-based methods collapse toward uniform averaging. Useful for diagnosing when sophisticated importance/conflict allocation is likely to matter. Relevance assessment is based on abstract and indexed metadata; full-text assessment pending.}
+}
+
+@inproceedings{zheng_comerge_2026,
+  author         = {Mingjie Zheng and Zihao Chen and Wenqing Chen and Weile Yuan and Zhixuan Chu and Jianxing Yu and Zibin Zheng},
+  title          = {CoMerge: Conflict-Driven Preference Optimization for Multi-Task Model Merging},
+  booktitle      = {Proceedings of the 2026 Conference on Empirical Methods in Natural Language Processing},
+  year           = {2026},
+  eprint         = {2609.02273},
+  archiveprefix  = {arXiv},
+  doi            = {10.48550/arXiv.2609.02273},
+  url            = {https://arxiv.org/abs/2609.02273},
+  preprint_date  = {2026-09-02},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-11},
+  note           = {Uses conflicts exposed by naive task arithmetic to construct self-supervised preference pairs and optimize lightweight tensor-wise merging coefficients. A strong learned conflict-resolution and action-weight baseline for the model-merging branch. Relevance assessment is based on abstract and indexed metadata; full-text assessment pending.}
+}
+
+@article{liu_cabs_plus_2026,
+  author         = {Yuchen Liu and Zongzhen Yang and Binhang Qi and Hailong Sun and Xiang Gao},
+  title          = {CABS+: Efficient and Scalable Model Merging via Conflict-Aware Sparsification and Adaptive Weight Allocation},
+  journal      = {arXiv preprint arXiv:2608.12842},
+  year           = {2026},
+  eprint         = {2608.12842},
+  archiveprefix  = {arXiv},
+  doi            = {10.48550/arXiv.2608.12842},
+  url            = {https://arxiv.org/abs/2608.12842},
+  preprint_date  = {2026-08-13},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-11},
+  note           = {Combines conflict-aware structured sparsification with gradient-free adaptive merging-weight allocation and proposes a mergeability score for model selection. Directly relevant to coupling selective parameter retention with downstream allocation. Relevance assessment is based on abstract and indexed metadata; full-text assessment pending.}
+}
