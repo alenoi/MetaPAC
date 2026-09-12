@@ -1,5 +1,5 @@
 version: 1
-updated: 2026-09-11
+updated: 2026-09-12
 seed_topics:
   - adaptive transformer compression
   - mixed compression
@@ -569,6 +569,34 @@ discovered_topics:
   - term: relative synergy score mergeability
     source: liu_cabs_plus_2026
     first_seen: 2026-09-11
+
+  - term: counteracting residual quantization error
+    source: chen_why_ptq_2026
+    first_seen: 2026-09-12
+  - term: pretrained quantization robustness
+    source: chen_why_ptq_2026
+    first_seen: 2026-09-12
+  - term: LM-head geometry under quantization
+    source: chen_why_ptq_2026
+    first_seen: 2026-09-12
+  - term: cross-layer hidden-state error cancellation
+    source: chen_why_ptq_2026
+    first_seen: 2026-09-12
+  - term: optimization-generalization trade-off in model merging
+    source: li_model_merging_generalization_2026
+    first_seen: 2026-09-12
+  - term: merge-friendly expert scaling laws
+    source: li_model_merging_generalization_2026
+    first_seen: 2026-09-12
+  - term: sparsification-based task-heterogeneity suppression
+    source: li_model_merging_generalization_2026
+    first_seen: 2026-09-12
+  - term: FUSE model-merging taxonomy
+    source: song_model_merging_survey_2026
+    first_seen: 2026-09-12
+  - term: loss-landscape mode connectivity for model merging
+    source: song_model_merging_survey_2026
+    first_seen: 2026-09-12
 
 search_rules:
   deduplicate_publications_by:
