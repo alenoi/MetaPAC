@@ -1176,3 +1176,64 @@
   urldate        = {2026-09-12},
   note           = {Surveys LLM model merging using the FUSE taxonomy and covers weight averaging, task-vector arithmetic, sparsification-enhanced merging, mixture-of-experts approaches, optimization methods, applications, tools, and benchmarks. Useful as a citation-graph hub and taxonomy source for the MetaPAC SLR and its emerging compression-aware merging branch; latest version checked is v2 from 2026-03-30. Relevance assessment is based on abstract and indexed metadata; full-text assessment pending.}
 }
+
+@inproceedings{frantar_gptq_2023,
+  author         = {Elias Frantar and Saleh Ashkboos and Torsten Hoefler and Dan Alistarh},
+  title          = {{GPTQ}: Accurate Post-Training Quantization for Generative Pre-trained Transformers},
+  booktitle      = {International Conference on Learning Representations},
+  year           = {2023},
+  eprint         = {2210.17323},
+  archiveprefix  = {arXiv},
+  doi            = {10.48550/arXiv.2210.17323},
+  url            = {https://arxiv.org/abs/2210.17323},
+  preprint_date  = {2022-10-31},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-13},
+  note           = {Introduces one-shot weight quantization based on approximate second-order information for very large generative transformers. It is a foundational deterministic baseline for MetaPAC's learned importance estimation and low-bit action allocation. Relevance assessment is based on abstract and indexed metadata; full-text assessment pending.}
+}
+
+@inproceedings{xiao_smoothquant_2023,
+  author         = {Guangxuan Xiao and Ji Lin and Mickael Seznec and Hao Wu and Julien Demouth and Song Han},
+  title          = {{SmoothQuant}: Accurate and Efficient Post-Training Quantization for Large Language Models},
+  booktitle      = {Proceedings of the 40th International Conference on Machine Learning},
+  year           = {2023},
+  eprint         = {2211.10438},
+  archiveprefix  = {arXiv},
+  doi            = {10.48550/arXiv.2211.10438},
+  url            = {https://arxiv.org/abs/2211.10438},
+  preprint_date  = {2022-11-18},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-13},
+  note           = {Uses a mathematically equivalent transformation to migrate quantization difficulty from activation outliers to weights and enable hardware-friendly W8A8 inference. This is a strong baseline for MetaPAC's hardware-aware action design and activation-sensitive quantization branch. Relevance assessment is based on abstract and indexed metadata; full-text assessment pending.}
+}
+
+@article{dettmers_spqr_2023,
+  author         = {Tim Dettmers and Ruslan Svirschevski and Vage Egiazarian and Denis Kuznedelev and Elias Frantar and Saleh Ashkboos and Alexander Borzunov and Torsten Hoefler and Dan Alistarh},
+  title          = {{SpQR}: A Sparse-Quantized Representation for Near-Lossless {LLM} Weight Compression},
+  journal        = {arXiv preprint arXiv:2306.03078},
+  year           = {2023},
+  eprint         = {2306.03078},
+  archiveprefix  = {arXiv},
+  doi            = {10.48550/arXiv.2306.03078},
+  url            = {https://arxiv.org/abs/2306.03078},
+  preprint_date  = {2023-06-05},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-13},
+  note           = {Identifies weights that cause unusually large quantization errors, isolates them at higher precision, and quantizes the remainder to 3--4 bits. Its sparse-plus-quantized representation is a direct mixed-precision baseline for MetaPAC's importance-driven selective protection. Relevance assessment is based on abstract and indexed metadata; full-text assessment pending.}
+}
+
+@inproceedings{shao_omniquant_2024,
+  author         = {Wenqi Shao and Mengzhao Chen and Zhaoyang Zhang and Peng Xu and Lirui Zhao and Zhiqian Li and Kaipeng Zhang and Peng Gao and Yu Qiao and Ping Luo},
+  title          = {{OmniQuant}: Omnidirectionally Calibrated Quantization for Large Language Models},
+  booktitle      = {International Conference on Learning Representations},
+  year           = {2024},
+  eprint         = {2308.13137},
+  archiveprefix  = {arXiv},
+  doi            = {10.48550/arXiv.2308.13137},
+  url            = {https://arxiv.org/abs/2308.13137},
+  preprint_date  = {2023-08-25},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-13},
+  note           = {Optimizes learnable weight-clipping thresholds and equivalent transformations through block-wise reconstruction for weight-only and weight-activation PTQ. This provides a calibration-based alternative to MetaPAC's learned importance predictor and a baseline for jointly adapting multiple quantization controls. Relevance assessment is based on abstract and indexed metadata; full-text assessment pending.}
+}
+
