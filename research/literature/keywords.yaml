@@ -598,6 +598,32 @@ discovered_topics:
     source: song_model_merging_survey_2026
     first_seen: 2026-09-12
 
+
+  - term: approximate-second-order weight quantization
+    source: frantar_gptq_2023
+    first_seen: 2026-09-13
+  - term: one-shot low-bit transformer quantization
+    source: frantar_gptq_2023
+    first_seen: 2026-09-13
+  - term: activation-to-weight quantization difficulty migration
+    source: xiao_smoothquant_2023
+    first_seen: 2026-09-13
+  - term: equivalent smoothing transformation for W8A8
+    source: xiao_smoothquant_2023
+    first_seen: 2026-09-13
+  - term: sparse-quantized weight representation
+    source: dettmers_spqr_2023
+    first_seen: 2026-09-13
+  - term: high-precision isolation of quantization outliers
+    source: dettmers_spqr_2023
+    first_seen: 2026-09-13
+  - term: learnable weight clipping for PTQ
+    source: shao_omniquant_2024
+    first_seen: 2026-09-13
+  - term: learnable equivalent transformation for quantization
+    source: shao_omniquant_2024
+    first_seen: 2026-09-13
+
 search_rules:
   deduplicate_publications_by:
     - doi
