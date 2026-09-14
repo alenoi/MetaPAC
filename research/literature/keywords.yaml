@@ -624,6 +624,32 @@ discovered_topics:
     source: shao_omniquant_2024
     first_seen: 2026-09-13
 
+
+  - term: task-specific routing-mass expert importance
+    source: martin_ests_2026
+    first_seen: 2026-09-14
+  - term: cross-lingual routing-divergence capacity allocation
+    source: martin_ests_2026
+    first_seen: 2026-09-14
+  - term: activation-range clustering for quantization
+    source: yuan_rptq_2023
+    first_seen: 2026-09-14
+  - term: reorder-fused activation quantization
+    source: yuan_rptq_2023
+    first_seen: 2026-09-14
+  - term: block-influence layer pruning
+    source: men_shortgpt_2024
+    first_seen: 2026-09-14
+  - term: whole-transformer-block removal
+    source: men_shortgpt_2024
+    first_seen: 2026-09-14
+  - term: serving-aware W4A4 mixed precision
+    source: zhao_atom_2023
+    first_seen: 2026-09-14
+  - term: low-bit operator-aware LLM quantization
+    source: zhao_atom_2023
+    first_seen: 2026-09-14
+
 search_rules:
   deduplicate_publications_by:
     - doi
