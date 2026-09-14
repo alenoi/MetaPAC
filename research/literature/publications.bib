@@ -1237,3 +1237,63 @@
   note           = {Optimizes learnable weight-clipping thresholds and equivalent transformations through block-wise reconstruction for weight-only and weight-activation PTQ. This provides a calibration-based alternative to MetaPAC's learned importance predictor and a baseline for jointly adapting multiple quantization controls. Relevance assessment is based on abstract and indexed metadata; full-text assessment pending.}
 }
 
+@inproceedings{martin_ests_2026,
+  author         = {Liu O. Martin and Lucas Bandarkar and Nanyun Peng},
+  title          = {{ESTS} at {WMT26}: Routing-Informed Expert Pruning for Model Compression},
+  booktitle      = {Proceedings of the Eleventh Conference on Machine Translation},
+  year           = {2026},
+  eprint         = {2609.12310},
+  archiveprefix  = {arXiv},
+  doi            = {10.48550/arXiv.2609.12310},
+  url            = {https://arxiv.org/abs/2609.12310},
+  preprint_date  = {2026-09-11},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-14},
+  note           = {Ranks MoE experts using task-specific routing mass, uses cross-lingual routing divergence to allocate retained capacity across layers, physically removes low-importance experts, and then applies recovery tuning and MXFP4 quantization. This is a direct mixed-compression and importance-to-allocation baseline for MetaPAC, especially for extending the action space to MoE experts. Relevance assessment is based on abstract and indexed metadata; full-text assessment pending.}
+}
+
+@article{yuan_rptq_2023,
+  author         = {Zhihang Yuan and Lin Niu and Jiawei Liu and Wenyu Liu and Xinggang Wang and Yuzhang Shang and Guangyu Sun and Qiang Wu and Jiaxiang Wu and Bingzhe Wu},
+  title          = {{RPTQ}: Reorder-based Post-training Quantization for Large Language Models},
+  journal        = {arXiv preprint arXiv:2304.01089},
+  year           = {2023},
+  eprint         = {2304.01089},
+  archiveprefix  = {arXiv},
+  doi            = {10.48550/arXiv.2304.01089},
+  url            = {https://arxiv.org/abs/2304.01089},
+  preprint_date  = {2023-04-03},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-14},
+  note           = {Clusters and reorders activation channels according to their ranges, then fuses the reordering into layer normalization and linear weights to reduce runtime overhead. It is a strong clustering-based, hardware-conscious baseline for MetaPAC's activation-aware grouping and quantization actions. Relevance assessment is based on abstract and indexed metadata; full-text assessment pending.}
+}
+
+@article{men_shortgpt_2024,
+  author         = {Xin Men and Mingyu Xu and Qingyu Zhang and Bingning Wang and Hongyu Lin and Yaojie Lu and Xianpei Han and Weipeng Chen},
+  title          = {{ShortGPT}: Layers in Large Language Models are More Redundant Than You Expect},
+  journal        = {arXiv preprint arXiv:2403.03853},
+  year           = {2024},
+  eprint         = {2403.03853},
+  archiveprefix  = {arXiv},
+  doi            = {10.48550/arXiv.2403.03853},
+  url            = {https://arxiv.org/abs/2403.03853},
+  preprint_date  = {2024-03-06},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-14},
+  note           = {Defines Block Influence to measure layer significance and removes low-influence transformer blocks; the method is described as complementary to quantization. It is a simple deterministic layer-importance baseline and suggests whole-block removal as an additional MetaPAC compression action. Relevance assessment is based on abstract and indexed metadata; full-text assessment pending.}
+}
+
+@article{zhao_atom_2023,
+  author         = {Yilong Zhao and Chien-Yu Lin and Kan Zhu and Zihao Ye and Lequn Chen and Size Zheng and Luis Ceze and Arvind Krishnamurthy and Tianqi Chen and Baris Kasikci},
+  title          = {Atom: Low-bit Quantization for Efficient and Accurate {LLM} Serving},
+  journal        = {arXiv preprint arXiv:2310.19102},
+  year           = {2023},
+  eprint         = {2310.19102},
+  archiveprefix  = {arXiv},
+  doi            = {10.48550/arXiv.2310.19102},
+  url            = {https://arxiv.org/abs/2310.19102},
+  preprint_date  = {2023-10-29},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-14},
+  note           = {Combines mixed-precision and fine-grained 4-bit weight-activation quantization with low-bit GPU operators for serving throughput. This is a direct hardware-aware reference for checking whether MetaPAC's allocated actions translate into deployable latency and throughput improvements. Relevance assessment is based on abstract and indexed metadata; full-text assessment pending.}
+}
+
