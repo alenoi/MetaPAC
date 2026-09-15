@@ -650,6 +650,35 @@ discovered_topics:
     source: zhao_atom_2023
     first_seen: 2026-09-14
 
+
+  - term: end-to-end context-importance ranking
+    source: li_sas_2026
+    first_seen: 2026-09-15
+  - term: fixed-budget attention sparsification
+    source: li_sas_2026
+    first_seen: 2026-09-15
+  - term: continuous-gate sparse attention
+    source: li_sas_2026
+    first_seen: 2026-09-15
+  - term: agentic profiling-guided mixed compression
+    source: jafari_apqf_2026
+    first_seen: 2026-09-15
+  - term: LLM-planned per-layer pruning and bit width
+    source: jafari_apqf_2026
+    first_seen: 2026-09-15
+  - term: adaptive recovery-strategy selection
+    source: jafari_apqf_2026
+    first_seen: 2026-09-15
+  - term: nested multi-budget MoE pruning
+    source: mo_flexmoe_2026
+    first_seen: 2026-09-15
+  - term: discrete intra-expert pruning actions
+    source: mo_flexmoe_2026
+    first_seen: 2026-09-15
+  - term: online compression-budget switching
+    source: mo_flexmoe_2026
+    first_seen: 2026-09-15
+
 search_rules:
   deduplicate_publications_by:
     - doi
