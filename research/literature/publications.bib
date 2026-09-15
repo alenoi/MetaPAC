@@ -1297,3 +1297,48 @@
   note           = {Combines mixed-precision and fine-grained 4-bit weight-activation quantization with low-bit GPU operators for serving throughput. This is a direct hardware-aware reference for checking whether MetaPAC's allocated actions translate into deployable latency and throughput improvements. Relevance assessment is based on abstract and indexed metadata; full-text assessment pending.}
 }
 
+@article{li_sas_2026,
+  author         = {Zhiwei Li and Lei Zhu and Hao Gu and Xiang Hu and Yan Wang and Haitao Mi and Sirui Han and Leo Liang and Zhijiang Guo},
+  title          = {{SAS}: Simple Attention Sparsification via End-to-End Optimization of Context Ranking},
+  journal        = {arXiv preprint arXiv:2609.13141},
+  year           = {2026},
+  eprint         = {2609.13141},
+  archiveprefix  = {arXiv},
+  doi            = {10.48550/arXiv.2609.13141},
+  url            = {https://arxiv.org/abs/2609.13141},
+  preprint_date  = {2026-09-11},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-15},
+  note           = {Learns to rank tokens or blocks under a fixed sparse-attention budget by injecting continuous selector scores into attention logits and optimizing them end-to-end with the language-modeling loss. It is relevant to MetaPAC as a runtime importance-estimation and budget-allocation analogue, with a hardware-aware Triton implementation. Relevance assessment is based on abstract and indexed metadata; full-text assessment pending.}
+}
+
+@article{jafari_apqf_2026,
+  author         = {Sadegh Jafari and Mohiuddin Bilwal and Fan Zhou and Brian Gelder and Ali Jannesari},
+  title          = {{APQF}: Agentic Profiling-Guided Structured Pruning and Mixed-Precision Quantization with Adaptive Fine-Tuning},
+  journal        = {arXiv preprint arXiv:2608.05499},
+  year           = {2026},
+  eprint         = {2608.05499},
+  archiveprefix  = {arXiv},
+  doi            = {10.48550/arXiv.2608.05499},
+  url            = {https://arxiv.org/abs/2608.05499},
+  preprint_date  = {2026-08-06},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-15},
+  note           = {Combines profiling-guided structured pruning, mixed-precision quantization-aware training, and adaptive recovery; profiling signals drive per-layer pruning ratios, bit widths, and recovery choices proposed by LLM planners. Although evaluated on CNNs and vision transformers, it is a close end-to-end adaptive mixed-compression competitor to MetaPAC with a different decision mechanism. Relevance assessment is based on abstract and indexed metadata; full-text assessment pending.}
+}
+
+@article{mo_flexmoe_2026,
+  author         = {Fan Mo and Yuxuan Han and Geng Zhang and Wangbo Zhao and Yang You},
+  title          = {{FlexMoE}: One-for-All Nested Intra-Expert Pruning for {MoE} Language Models},
+  journal        = {arXiv preprint arXiv:2606.27866},
+  year           = {2026},
+  eprint         = {2606.27866},
+  archiveprefix  = {arXiv},
+  doi            = {10.48550/arXiv.2606.27866},
+  url            = {https://arxiv.org/abs/2606.27866},
+  preprint_date  = {2026-06-26},
+  evidence       = {abstract_and_metadata},
+  urldate        = {2026-09-15},
+  note           = {Ranks expert FFN channels, learns discrete pruning actions, and exports nested subnetworks across multiple budgets from one action-training run, with recovery transferred to unseen budgets and kernel-level online switching. This is a direct adaptive-budget and learned-action baseline for a MoE extension of MetaPAC. Relevance assessment is based on abstract and indexed metadata; full-text assessment pending.}
+}
+
